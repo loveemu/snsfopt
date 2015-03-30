@@ -11,12 +11,14 @@
 #include "drvimpl.h"
 #include "xsfdrv.h"
 
+#ifndef SNSFOPT
 #if _MSC_VER >= 1200
 #pragma comment(linker, "/EXPORT:XSFSetup=_XSFSetup@8")
 #endif
 
 #if defined(_MSC_VER) && !defined(_DEBUG)
 #pragma comment(linker,"/MERGE:.rdata=.text")
+#endif
 #endif
 
 static void * PASCAL XSFLibAlloc(DWORD dwSize)
@@ -89,6 +91,7 @@ int xsf_get_lib(char *pfilename, void **ppbuffer, unsigned *plength)
 	return 1;
 }
 
+#ifndef SNSFOPT
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
 	if (fdwReason == DLL_PROCESS_ATTACH)
@@ -100,5 +103,5 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 	}
 	return TRUE;
 }
-
+#endif
 
