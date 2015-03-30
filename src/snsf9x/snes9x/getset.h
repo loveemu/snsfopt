@@ -255,6 +255,25 @@ inline uint8 S9xGetByte (uint32 Address)
 	#endif
 		byte = *(GetAddress + (Address & 0xffff));
 		addCyclesInMemoryAccess;
+
+#ifdef SNSFOPT
+		uint8 * ptrToByte = GetAddress + (Address & 0xffff);
+		if (ptrToByte >= Memory.ROM && ptrToByte < Memory.ROM + CMemory::MAX_ROM_SIZE)
+		{
+			uint32 offset = ptrToByte - Memory.ROM;
+			if (Memory.ROMCoverage[offset] < 0xff)
+			{
+				if (Memory.ROMCoverage[offset] == 0)
+				{
+					Memory.ROMCoverageSize++;
+				}
+
+				Memory.ROMCoverage[offset]++;
+				Memory.ROMCoverageHistogram[Memory.ROMCoverage[offset]]++;
+			}
+		}
+#endif
+
 		return (byte);
 	}
 
