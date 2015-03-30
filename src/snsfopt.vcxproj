@@ -172,7 +172,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="snsf9x\drvimpl.cpp" />
     <ClCompile Include="snsf9x\snes9x\apu\apu.cpp" />
     <ClCompile Include="snsf9x\snes9x\apu\SNES_SPC.cpp" />
     <ClCompile Include="snsf9x\snes9x\apu\SNES_SPC_misc.cpp" />
@@ -187,15 +186,14 @@
     <ClCompile Include="snsf9x\snes9x\memmap.cpp" />
     <ClCompile Include="snsf9x\snes9x\ppu.cpp" />
     <ClCompile Include="snsf9x\snes9x\sdd1.cpp" />
+    <ClCompile Include="snsf9x\SNESSystem.cpp" />
     <ClCompile Include="snsfopt.cpp" />
     <ClCompile Include="PSFFile.cpp" />
-    <ClCompile Include="xsfc\xsfdrv.c" />
     <ClCompile Include="ZlibReader.cpp" />
     <ClCompile Include="ZlibWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cpath.h" />
-    <ClInclude Include="pversion.h" />
     <ClInclude Include="snsf9x\snes9x\65c816.h" />
     <ClInclude Include="snsf9x\snes9x\apu\apu.h" />
     <ClInclude Include="snsf9x\snes9x\apu\blargg_common.h" />
@@ -223,13 +221,9 @@
     <ClInclude Include="snsf9x\snes9x\ppu.h" />
     <ClInclude Include="snsf9x\snes9x\sdd1.h" />
     <ClInclude Include="snsf9x\snes9x\snes9x.h" />
+    <ClInclude Include="snsf9x\SNESSystem.h" />
     <ClInclude Include="snsfopt.h" />
     <ClInclude Include="PSFFile.h" />
-    <ClInclude Include="xsfc\drvimpl.h" />
-    <ClInclude Include="xsfc\leakchk.h" />
-    <ClInclude Include="xsfc\tagget.h" />
-    <ClInclude Include="xsfc\xsfc.h" />
-    <ClInclude Include="xsfc\xsfdrv.h" />
     <ClInclude Include="ZlibReader.h" />
     <ClInclude Include="ZlibWriter.h" />
   </ItemGroup>

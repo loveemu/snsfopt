@@ -21,6 +21,7 @@
 #include "PSFFile.h"
 
 #ifdef WIN32
+#include <Windows.h>
 #include <direct.h>
 #include <float.h>
 #define getcwd _getcwd
@@ -38,9 +39,12 @@
 #define SNSF_PSF_VERSION		0x23
 #define SNSF_EXE_HEADER_SIZE	8
 
+#define SNES_HEADER_SIZE	0x800
 #define MIN_SNES_ROM_SIZE	0x8000
 #define MAX_SNES_ROM_SIZE	0x800000
 #define MAX_SNSF_EXE_SIZE	(MAX_SNES_ROM_SIZE + SNSF_EXE_HEADER_SIZE)
+
+#define MAX_SNES_SRAM_SIZE	0x20000
 
 SnsfOpt::SnsfOpt() :
 	bytes_used(0),
@@ -52,23 +56,20 @@ SnsfOpt::SnsfOpt() :
 	oneshot_verify_length(15),
 	paranoid_bytes(0)
 {
-#if 0
 	m_system = new SNESSystem;
-#endif
-	rom_refs = new uint8_t[MAX_SNES_ROM_SIZE];
+	rom_refs = new uint8_t[SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE];
 
 	ResetOptimizer();
 }
 
 SnsfOpt::~SnsfOpt()
 {
-#if 0
 	if (m_system != NULL)
 	{
-		CPUCleanUp(m_system);
+		m_system->Term();
 		delete m_system;
 	}
-#endif
+
 	if (rom_refs != NULL)
 	{
 		delete [] rom_refs;
@@ -207,41 +208,24 @@ double SnsfOpt::ToTimeValue(const std::string& str)
 	return tv;
 }
 
-bool SnsfOpt::LoadROM(const void *rom, uint32_t size)
+bool SnsfOpt::LoadROM(const uint8_t * rom, uint32_t romsize, const uint8_t * sram, uint32_t sramsize)
 {
 	rom_path = "";
 	rom_filename = "";
 
-#if 0
 	if (m_system->rom != NULL)
 	{
 		MergeRefs(rom_refs, m_system->rom_refs, GetROMSize());
-		CPUCleanUp(m_system);
+		m_system->Term();
 	}
 
-	m_system->cpuIsMultiBoot = multiboot;
+	m_system->Load(rom, romsize, sram, sramsize);
 
-	m_system->soundSampleRate = 44100;
-	m_system->soundDeclicking = false;
-	m_system->soundInterpolation = false;
-
-	CPULoadRom(m_system, rom, size);
-	if (m_system->cpuIsMultiBoot)
-	{
-		rom_size = size;
-	}
-	else
-	{
-		rom_size = m_system->romSize;
-	}
-
-	soundInit(m_system, &m_output);
-	soundReset(m_system);
+	m_system->SoundInit(&m_output);
 	m_output.reset_timer();
 
-	CPUInit(m_system);
-	CPUReset(m_system);
-#endif
+	m_system->Init();
+	m_system->Reset();
 
 	ResetOptimizerVariables();
 	return true;
@@ -250,16 +234,22 @@ bool SnsfOpt::LoadROM(const void *rom, uint32_t size)
 bool SnsfOpt::LoadROMFile(const std::string& filename)
 {
 	uint8_t * rom_buf = NULL;
+	uint32_t rom_size;
+	uint8_t * sram_buf = NULL;
+	uint32_t sram_size;
 	bool load_result = false;
 
 	if (PSFFile::IsPSFFile(filename))
 	{
-		uint8_t * rom_buf = new uint8_t[MAX_SNES_ROM_SIZE];
+		rom_buf = new uint8_t[SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE];
 
-		load_result = ReadSNSFFile(filename, 0, rom_buf, &rom_size);
+		sram_buf = new uint8_t[MAX_SNES_SRAM_SIZE];
+		memset(sram_buf, 0xff, MAX_SNES_SRAM_SIZE);
+
+		load_result = ReadSNSFFile(filename, 0, rom_buf, &rom_size, sram_buf, &sram_size);
 		if (load_result)
 		{
-			load_result = LoadROM(rom_buf, rom_size);
+			load_result = LoadROM(rom_buf, rom_size, sram_buf, sram_size);
 			if (load_result)
 			{
 				char tmppath[PATH_MAX];
@@ -271,19 +261,16 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 				rom_filename = tmppath;
 			}
 		}
-
-		delete [] rom_buf;
 	}
 	else
 	{
 		// Plain SNES ROM
-		// TODO: Remove SNES header
 
 		FILE *fp = NULL;
 		off_t filesize;
 
 		filesize = path_getfilesize(filename.c_str());
-		if (filesize <= 0 || filesize > MAX_SNES_ROM_SIZE)
+		if (filesize <= 0 || filesize > SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE)
 		{
 			m_message = filename + " - " + "File size error";
 			return false;
@@ -304,7 +291,7 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 			return false;
 		}
 
-		load_result = LoadROM(rom_buf, filesize);
+		load_result = LoadROM(rom_buf, filesize, NULL, 0);
 		if (load_result)
 		{
 			char tmppath[PATH_MAX];
@@ -316,33 +303,31 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 			rom_filename = tmppath;
 		}
 
-		delete [] rom_buf;
 		fclose(fp);
 	}
+
+	if (rom_buf != NULL)
+	{
+		delete[] rom_buf;
+	}
+
+	if (sram_buf != NULL)
+	{
+		delete[] sram_buf;
+	}
+
 	return load_result;
 }
 
 void SnsfOpt::PatchROM(uint32_t offset, const void * data, uint32_t size)
 {
-	uint32_t max_rom_size = 0;
-	uint8_t * snes_rom = NULL;
-
-#if 0
 	if (m_system->rom == NULL)
 	{
 		return;
 	}
 
-	if (m_system->cpuIsMultiBoot)
-	{
-		max_rom_size = 0x40000;
-		snes_rom = m_system->workRAM;
-	}
-	else
-	{
-		max_rom_size = 0x02000000;
-		snes_rom = m_system->rom;
-	}
+	uint32_t max_rom_size = MAX_SNES_ROM_SIZE;
+	uint8_t * snes_rom = m_system->rom;
 
 	if (offset >= max_rom_size)
 	{
@@ -352,26 +337,23 @@ void SnsfOpt::PatchROM(uint32_t offset, const void * data, uint32_t size)
 	{
 		size = max_rom_size - offset;
 	}
-#endif
 
 	memcpy(&snes_rom[offset], data, size);
 }
 
 void SnsfOpt::ResetGame()
 {
-#if 0
 	if (m_system->rom == NULL)
 	{
 		return;
 	}
 
 	MergeRefs(rom_refs, m_system->rom_refs, GetROMSize());
-	CPUReset(m_system);
+	m_system->Reset();
 	m_output.reset_timer();
-#endif
 }
 
-bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size)
+bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size, uint8_t * sram_buf, uint32_t * ptr_sram_size)
 {
 	bool result;
 
@@ -417,6 +399,11 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 		{
 			*ptr_rom_size = 0;
 		}
+
+		if (ptr_sram_size != NULL)
+		{
+			*ptr_sram_size = 0;
+		}
 	}
 
 	// handle _lib file
@@ -424,7 +411,7 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 	bool has_lib = (it_lib != snsf->tags.end() && it_lib->first == "_lib");
 	if (has_lib)
 	{
-		if (!ReadSNSFFile(it_lib->second, nesting_level + 1, rom_buf, ptr_rom_size))
+		if (!ReadSNSFFile(it_lib->second, nesting_level + 1, rom_buf, ptr_rom_size, sram_buf, ptr_sram_size))
 		{
 			delete snsf;
 			chdir(savedcwd);
@@ -448,10 +435,10 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 
 	// valid load address?
 	uint32_t rom_offset;
-	rom_offset = rom_address & 0xFFFFFF;
+	rom_offset = rom_address & 0x1FFFFFF;
 
 	// check offset and size
-	if (rom_offset + rom_size > (size_t) MAX_SNES_ROM_SIZE)
+	if (rom_offset + rom_size > (size_t)SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE)
 	{
 		m_message = filename + " - " + "ROM size error";
 
@@ -479,6 +466,58 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 		return false;
 	}
 
+	// reserved section
+	if (snsf->reserved.size() > 8)
+	{
+		uint32_t reserve_type = snsf->reserved[0] | (snsf->reserved[1] << 8) | (snsf->reserved[2] << 16) | (snsf->reserved[3] << 24);
+		uint32_t reserve_size = snsf->reserved[4] | (snsf->reserved[5] << 8) | (snsf->reserved[6] << 16) | (snsf->reserved[7] << 24);
+
+		if (reserve_type == 0)
+		{
+			// SRAM block
+			if (reserve_size < 4)
+			{
+				m_message = filename + " - " + "Reserve section (SRAM) is too short";
+
+				delete snsf;
+				chdir(savedcwd);
+				return false;
+			}
+
+			// check offset and size
+			uint32_t sram_offset = snsf->reserved[8] | (snsf->reserved[9] << 8) | (snsf->reserved[10] << 16) | (snsf->reserved[11] << 24);
+			uint32_t sram_patch_size = reserve_size - 4;
+			if (sram_offset + sram_patch_size > MAX_SNES_SRAM_SIZE)
+			{
+				m_message = filename + " - " + "SRAM size error";
+
+				delete snsf;
+				chdir(savedcwd);
+				return false;
+			}
+
+			// load SRAM data
+			memcpy(&sram_buf[sram_offset], &snsf->reserved[12], sram_patch_size);
+
+			// update SRAM size
+			if (ptr_sram_size != NULL)
+			{
+				if (*ptr_sram_size < sram_offset + sram_patch_size)
+				{
+					*ptr_sram_size = sram_offset + sram_patch_size;
+				}
+			}
+		}
+		else
+		{
+			m_message = filename + " - " + "Unsupported reserve section type";
+
+			delete snsf;
+			chdir(savedcwd);
+			return false;
+		}
+	}
+
 	// handle _libN files
 	int libN = 2;
 	while (true)
@@ -492,7 +531,7 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 			break;
 		}
 
-		if (!ReadSNSFFile(it_libN->second, nesting_level + 1, rom_buf, ptr_rom_size))
+		if (!ReadSNSFFile(it_libN->second, nesting_level + 1, rom_buf, ptr_rom_size, sram_buf, ptr_sram_size))
 		{
 			delete snsf;
 			chdir(savedcwd);
@@ -517,10 +556,8 @@ void SnsfOpt::Optimize(void)
 {
 	timer_init();
 
-#if 0
-	bytes_used_old = m_system->bytes_used;
+	bytes_used_old = m_system->GetROMCoverageSize();
 	time_last_new_data = m_output.get_timer();
-#endif
 
 	for (int i = 0; i < 256; i++)
 	{
@@ -536,16 +573,14 @@ void SnsfOpt::Optimize(void)
 
 	do
 	{
-#if 0
-		bytes_used_old = m_system->bytes_used;
-		CPULoop(m_system, 250000);
+		bytes_used_old = m_system->GetROMCoverageSize();
+		m_system->CPULoop();
 
 		// any updates?
-		if (m_system->bytes_used != bytes_used_old)
+		if (m_system->GetROMCoverageSize() != bytes_used_old)
 		{
 			time_last_new_data = m_output.get_timer();
 		}
-#endif
 
 		// loop detection
 		DetectLoop();
@@ -557,12 +592,10 @@ void SnsfOpt::Optimize(void)
 		AdjustOptimizationEndPoint();
 
 		// is optimization (or loop detection) finished?
-#if 0
 		if (m_output.get_timer() >= optimize_endpoint)
 		{
 			finished = true;
 		}
-#endif
 
 		// show progress
 		double time_current = timer_get();
@@ -582,7 +615,7 @@ void SnsfOpt::DetectLoop()
 {
 	// detect possible maximum value of loop count at the moment
 	uint8_t loop_count_expected_upper = 255;
-#if 0
+
 	for (int count = 1; count < 256; count++)
 	{
 		if (rom_refs_histogram[count] != m_system->rom_refs_histogram[count])
@@ -621,12 +654,10 @@ void SnsfOpt::DetectLoop()
 
 	// update histogram
 	memcpy(rom_refs_histogram, m_system->rom_refs_histogram, sizeof(rom_refs_histogram));
-#endif
 }
 
 void SnsfOpt::DetectOneShot()
 {
-#if 0
 	if (m_output.get_silence_length() >= oneshot_verify_length && loop_count != 0) {
 		oneshot_endpoint = m_output.get_silence_start();
 		oneshot = true;
@@ -634,7 +665,6 @@ void SnsfOpt::DetectOneShot()
 	else {
 		oneshot = false;
 	}
-#endif
 }
 
 void SnsfOpt::AdjustOptimizationEndPoint()
@@ -644,9 +674,7 @@ void SnsfOpt::AdjustOptimizationEndPoint()
 		if (oneshot)
 		{
 			song_endpoint = oneshot_endpoint;
-#if 0
 			optimize_endpoint = m_output.get_timer();
-#endif
 		}
 		else
 		{
@@ -665,17 +693,17 @@ void SnsfOpt::ShowOptimizeProgress() const
 {
 	printf("%s: ", rom_filename.substr(0, 24).c_str());
 	printf("Time = %s", ToTimeString(song_endpoint).c_str());
-#if 0
+
 	printf(", Remaining = %s", ToTimeString(std::max(0.0, optimize_endpoint - m_output.get_timer())).c_str());
 	if (!time_loop_based)
 	{
-		printf(", %d bytes", m_system->bytes_used);
+		printf(", %d bytes", m_system->GetROMCoverageSize());
 	}
 	else
 	{
 		printf(", Loop = %d", loop_count + 1);
 	}
-#endif
+
 	fflush(stdout);
 
 	//       1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
@@ -688,10 +716,10 @@ void SnsfOpt::ShowOptimizeResult() const
 {
 	printf("%s: ", rom_filename.c_str());
 	printf("Time = %s", ToTimeString(song_endpoint).c_str());
-#if 0
+
 	if (!time_loop_based)
 	{
-		printf(", %d bytes", m_system->bytes_used);
+		printf(", %d bytes", m_system->GetROMCoverageSize());
 	}
 	else
 	{
@@ -704,7 +732,7 @@ void SnsfOpt::ShowOptimizeResult() const
 			printf(" (%d Loops)", target_loop_count);
 		}
 	}
-#endif
+
 	printf("                                            ");
 	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
@@ -741,22 +769,19 @@ uint32_t SnsfOpt::MergeRefs(uint8_t * dst_refs, const uint8_t * src_refs, uint32
 
 bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 {
-	uint8_t * snes_rom = NULL;
+	uint8_t * snes_rom = m_system->rom;
 	uint32_t rom_size = GetROMSize();
 
-#if 0
 	if (m_system->rom == NULL)
 	{
 		return false;
 	}
-#endif
 
 	if (size > rom_size)
 	{
 		size = rom_size;
 	}
 
-#if 0
 	if (wipe_unused_data)
 	{
 		uint8_t * rom_refs = new uint8_t[size];
@@ -767,7 +792,7 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 
 		for (uint32_t offset = 0; offset < size; offset++)
 		{
-			if (rom_refs[offset] != 0 || offset < 0xC0 || paranoid_count > 0)
+			if (rom_refs[offset] != 0 || paranoid_count > 0)
 			{
 				if (rom_refs[offset] != 0)
 				{
@@ -792,7 +817,6 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 	{
 		memcpy(rom, snes_rom, size);
 	}
-#endif
 
 	return true;
 }

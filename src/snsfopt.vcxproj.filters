@@ -31,12 +31,6 @@
     <Filter Include="Source Files\snsf9x\snes9x\apu">
       <UniqueIdentifier>{27240d2e-5e33-457b-b4e4-988c1c17b89c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\xsfc">
-      <UniqueIdentifier>{744fcb92-9768-4f5c-b21c-3d021fde62fb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\xsfc">
-      <UniqueIdentifier>{27e2493d-39a8-494f-b3d2-e011826d1d03}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="snsfopt.cpp">
@@ -93,11 +87,8 @@
     <ClCompile Include="snsf9x\snes9x\sdd1.cpp">
       <Filter>Source Files\snsf9x\snes9x</Filter>
     </ClCompile>
-    <ClCompile Include="snsf9x\drvimpl.cpp">
+    <ClCompile Include="snsf9x\SNESSystem.cpp">
       <Filter>Source Files\snsf9x</Filter>
-    </ClCompile>
-    <ClCompile Include="xsfc\xsfdrv.c">
-      <Filter>Source Files\xsfc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -197,23 +188,8 @@
     <ClInclude Include="snsf9x\snes9x\snes9x.h">
       <Filter>Header Files\snsf9x\snes9x</Filter>
     </ClInclude>
-    <ClInclude Include="xsfc\drvimpl.h">
-      <Filter>Header Files\xsfc</Filter>
-    </ClInclude>
-    <ClInclude Include="xsfc\leakchk.h">
-      <Filter>Header Files\xsfc</Filter>
-    </ClInclude>
-    <ClInclude Include="xsfc\tagget.h">
-      <Filter>Header Files\xsfc</Filter>
-    </ClInclude>
-    <ClInclude Include="xsfc\xsfc.h">
-      <Filter>Header Files\xsfc</Filter>
-    </ClInclude>
-    <ClInclude Include="xsfc\xsfdrv.h">
-      <Filter>Header Files\xsfc</Filter>
-    </ClInclude>
-    <ClInclude Include="pversion.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="snsf9x\SNESSystem.h">
+      <Filter>Header Files\snsf9x</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -6,7 +6,11 @@
 #include <string>
 #include <map>
 
-//include "vbam/gba/GBA.h"
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
+#include "snsf9x/SNESSystem.h"
 
 class SnsfOpt
 {
@@ -14,7 +18,7 @@ public:
 	SnsfOpt();
 	virtual ~SnsfOpt();
 
-	bool LoadROM(const void *rom, uint32_t size);
+	bool LoadROM(const uint8_t * rom, uint32_t romsize, const uint8_t * sram, uint32_t sramsize);
 	bool LoadROMFile(const std::string& filename);
 	void PatchROM(uint32_t offset, const void * data, uint32_t size);
 	void ResetGame(void);
@@ -29,7 +33,7 @@ public:
 
 	inline uint32_t GetROMSize(void) const
 	{
-		return rom_size;
+		return m_system->rom_size;
 	}
 
 	inline double GetTimeout(void) const
@@ -131,7 +135,77 @@ public:
 	static double ToTimeValue(const std::string& str);
 
 protected:
-	uint32_t rom_size;
+	SNESSystem * m_system;
+
+	struct snsf_sound_out : public SNESSoundOut
+	{
+		uint32_t sample_rate;
+		uint32_t samples_received;
+		uint32_t silent_samples_received;
+		uint16_t silence_threshold;
+		uint32_t silence_start;
+
+		snsf_sound_out() :
+			sample_rate(32000),
+			silence_threshold(8)
+		{
+			reset_timer();
+		}
+
+		virtual ~snsf_sound_out()
+		{
+		}
+
+		// Receives signed 16-bit stereo audio and a byte count
+		virtual void write(const void * samples, unsigned long bytes)
+		{
+			samples_received += (bytes / 2);
+
+			for (unsigned int i = 0; i < (bytes / 2); i++)
+			{
+				int16_t samp = ((int16_t *)samples)[i];
+				if ((samp + silence_threshold) >= 0 && (samp + silence_threshold) < (silence_threshold * 2))
+				{
+					if (silent_samples_received == 0)
+					{
+						silence_start = samples_received;
+					}
+					silent_samples_received++;
+				}
+				else
+				{
+					silence_start = samples_received;
+					silent_samples_received = 0;
+				}
+			}
+		}
+
+		void reset_timer(void)
+		{
+			samples_received = 0;
+			silence_start = 0;
+			silent_samples_received = 0;
+		}
+
+		double get_timer(void) const
+		{
+			return (double)samples_received / 2 / sample_rate;
+		}
+
+		double get_silence_start(void) const
+		{
+			return (double)silence_start / 2 / sample_rate;
+		}
+
+		double get_silence_length(void) const
+		{
+			return (double)silent_samples_received / 2 / sample_rate;
+		}
+	};
+	snsf_sound_out m_output;
+
+	//uint32_t rom_size;
+	//uint32_t sram_size;
 
 	uint8_t * rom_refs;
 	uint32_t rom_refs_histogram[256];
@@ -155,7 +229,7 @@ protected:
 
 	uint32_t paranoid_bytes;
 
-	bool ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size);
+	bool ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size, uint8_t * sram_buf, uint32_t * ptr_sram_size);
 
 	static uint32_t MergeRefs(uint8_t * dst_refs, const uint8_t * src_refs, uint32_t size);
 

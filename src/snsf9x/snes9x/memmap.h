@@ -235,6 +235,12 @@ struct CMemory
 	uint8	*BSRAM;
 	uint8	*BIOSROM;
 
+#ifdef SNSFOPT
+	uint8	*ROMCoverage;
+	uint32	ROMCoverageSize;
+	uint32	ROMCoverageHistogram[256];
+#endif
+
 	uint8	*Map[MEMMAP_NUM_BLOCKS];
 	uint8	*WriteMap[MEMMAP_NUM_BLOCKS];
 	uint8	BlockIsRAM[MEMMAP_NUM_BLOCKS];

@@ -1077,6 +1077,10 @@ bool8 CMemory::Init (void)
     VRAM = (uint8 *) malloc(0x10000);
     ROM  = (uint8 *) malloc(MAX_ROM_SIZE + 0x200 + 0x8000);
 
+#ifdef SNSFOPT
+	ROMCoverage = (uint8 *) malloc(MAX_ROM_SIZE);
+#endif
+
 	IPPU.TileCache[TILE_2BIT]       = (uint8 *) malloc(MAX_2BIT_TILES * 64);
 	IPPU.TileCache[TILE_4BIT]       = (uint8 *) malloc(MAX_4BIT_TILES * 64);
 	IPPU.TileCache[TILE_8BIT]       = (uint8 *) malloc(MAX_8BIT_TILES * 64);
@@ -1198,6 +1202,14 @@ void CMemory::Deinit (void)
 		free(ROM);
 		ROM = NULL;
 	}
+
+#ifdef SNSFOPT
+	if (ROMCoverage)
+	{
+		free(ROMCoverage);
+		ROMCoverage = NULL;
+	}
+#endif
 
 	for (int t = 0; t < 7; t++)
 	{
