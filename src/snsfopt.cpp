@@ -54,7 +54,8 @@ SnsfOpt::SnsfOpt() :
 	target_loop_count(2),
 	loop_verify_length(20.0),
 	oneshot_verify_length(15),
-	paranoid_bytes(0)
+	paranoid_bytes(0),
+	snsf_base_offset(0)
 {
 	m_system = new SNESSystem;
 	rom_refs = new uint8_t[SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE];
@@ -260,6 +261,8 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 
 				path_basename(tmppath);
 				rom_filename = tmppath;
+
+				snsf_base_offset = base_offset;
 			}
 		}
 	}
@@ -302,6 +305,8 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 
 			path_basename(tmppath);
 			rom_filename = tmppath;
+
+			snsf_base_offset = 0;
 		}
 
 		fclose(fp);
@@ -902,14 +907,26 @@ bool SnsfOpt::SaveROM(const std::string& filename, bool wipe_unused_data) const
 bool SnsfOpt::SaveSNSF(const std::string& filename, bool wipe_unused_data) const
 {
 	std::map<std::string, std::string> tags;
-	return SaveSNSF(filename, wipe_unused_data, tags);
+	return SaveSNSF(filename, snsf_base_offset, wipe_unused_data, tags);
 }
 
-bool SnsfOpt::SaveSNSF(const std::string& filename, bool wipe_unused_data, std::map<std::string, std::string>& tags) const
+bool SnsfOpt::SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data) const
+{
+	std::map<std::string, std::string> tags;
+	return SaveSNSF(filename, base_offset, wipe_unused_data, tags);
+}
+
+bool SnsfOpt::SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data, std::map<std::string, std::string>& tags) const
 {
 	uint32_t size = GetROMSize();
-	uint8_t * rom = new uint8_t[size];
 	bool result = false;
+
+	if (base_offset > 0xff00 || base_offset >= size)
+	{
+		return false;
+	}
+
+	uint8_t * rom = new uint8_t[size];
 
 	if (!GetROM(rom, size, wipe_unused_data))
 	{
@@ -917,18 +934,20 @@ bool SnsfOpt::SaveSNSF(const std::string& filename, bool wipe_unused_data, std::
 		return false;
 	}
 
+	uint32_t snsf_rom_size = size - base_offset;
+
 	ZlibWriter exe(Z_BEST_COMPRESSION);
 
 	result = true;
-	result &= exe.writeInt(0);
-	result &= exe.writeInt(size);
+	result &= exe.writeInt(base_offset);
+	result &= exe.writeInt(snsf_rom_size);
 	if (!result)
 	{
 		delete [] rom;
 		return false;
 	}
 
-	if (exe.write(rom, size) != size)
+	if (exe.write(&rom[base_offset], snsf_rom_size) != snsf_rom_size)
 	{
 		delete [] rom;
 		return false;

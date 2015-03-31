@@ -29,7 +29,8 @@ public:
 	bool GetROM(void * rom, uint32_t size, bool wipe_unused_data) const;
 	bool SaveROM(const std::string& filename, bool wipe_unused_data) const;
 	bool SaveSNSF(const std::string& filename, bool wipe_unused_data) const;
-	bool SaveSNSF(const std::string& filename, bool wipe_unused_data, std::map<std::string, std::string>& tags) const;
+	bool SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data) const;
+	bool SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data, std::map<std::string, std::string>& tags) const;
 
 	inline uint32_t GetROMSize(void) const
 	{
@@ -204,8 +205,7 @@ protected:
 	};
 	snsf_sound_out m_output;
 
-	//uint32_t rom_size;
-	//uint32_t sram_size;
+	uint32_t snsf_base_offset;
 
 	uint8_t * rom_refs;
 	uint32_t rom_refs_histogram[256];
