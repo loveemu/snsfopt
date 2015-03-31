@@ -1141,7 +1141,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		if (argv[argi][1] == 'f')  //regular .snsf optimization. this option doubles as minisnsf->snsf converter
+		if (strcmp(argv[argi], "-f") == 0)  //regular .snsf optimization. this option doubles as minisnsf->snsf converter
 		{
 			mode = SNSFOPT_PROC_F;
 
@@ -1152,7 +1152,7 @@ int main(int argc, char *argv[])
 			}
 			argi++;
 		}
-		else if (argv[argi][1] == 'r')
+		else if (strcmp(argv[argi], "-r") == 0)
 		{
 			mode = SNSFOPT_PROC_R;
 
@@ -1163,7 +1163,7 @@ int main(int argc, char *argv[])
 			}
 			argi++;
 		}
-		else if (argv[argi][1] == 's')  //Song value snsflib optimization.
+		else if (strcmp(argv[argi], "-s") == 0)  //Song value snsflib optimization.
 		{
 			mode = SNSFOPT_PROC_S;
 
@@ -1174,7 +1174,7 @@ int main(int argc, char *argv[])
 			}
 			argi++;
 		}
-		else if (argv[argi][1] == 'l')  //snsflib optimization.
+		else if (strcmp(argv[argi], "-l") == 0)  //snsflib optimization.
 		{
 			mode = SNSFOPT_PROC_L;
 
@@ -1185,7 +1185,7 @@ int main(int argc, char *argv[])
 			}
 			argi++;
 		}
-		else if (argv[argi][1] == 't')
+		else if (strcmp(argv[argi], "-t") == 0)
 		{
 			mode = SNSFOPT_PROC_T;
 			opt.SetTimeLoopBased(true);
@@ -1197,7 +1197,7 @@ int main(int argc, char *argv[])
 			}
 			argi++;
 		}
-		else if (argv[argi][1] == 'T') // Optimize while no new data found for.
+		else if (strcmp(argv[argi], "-T") == 0) // Optimize while no new data found for.
 		{
 			if (argc <= (argi + 1))
 			{
@@ -1208,7 +1208,7 @@ int main(int argc, char *argv[])
 			opt.SetTimeout(SnsfOpt::ToTimeValue(argv[argi + 1]));
 			argi++;
 		}
-		else if (argv[argi][1] == 'P') // I am paranoid. assume x bytes within a used byte is also used.
+		else if (strcmp(argv[argi], "-P") == 0) // I am paranoid. assume x bytes within a used byte is also used.
 		{
 			if (argc <= (argi + 1))
 			{
@@ -1225,7 +1225,7 @@ int main(int argc, char *argv[])
 			opt.SetParanoidSize(l);
 			argi++;
 		}
-		else if (argv[argi][1] == 'o')
+		else if (strcmp(argv[argi], "-o") == 0)
 		{
 			if (argc <= (argi + 1))
 			{
@@ -1270,9 +1270,8 @@ int main(int argc, char *argv[])
 						break;
 					}
 
-					switch(argv[argi][1])
+					if (strcmp(argv[argi], "-V") == 0)
 					{
-					case 'V':
 						if (argc <= (argi + 1))
 						{
 							fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
@@ -1280,9 +1279,9 @@ int main(int argc, char *argv[])
 						}
 						opt.SetLoopVerifyLength(SnsfOpt::ToTimeValue(argv[argi + 1]));
 						argi++;
-						break;
-
-					case 'L':
+					}
+					else if (strcmp(argv[argi], "-L") == 0)
+					{
 						if (argc <= (argi + 1))
 						{
 							fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
@@ -1302,13 +1301,13 @@ int main(int argc, char *argv[])
 						}
 						opt.SetTargetLoopCount((uint8_t)l);
 						argi++;
-						break;
-
-					case 'T':
+					}
+					else if (strcmp(argv[argi], "-T") == 0)
+					{
 						addSNSFTags = true;
-						break;
-
-					case 'F':
+					}
+					else if (strcmp(argv[argi], "-F") == 0)
+					{
 						if (argc <= (argi + 1))
 						{
 							fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
@@ -1317,9 +1316,9 @@ int main(int argc, char *argv[])
 
 						loopFadeLength = SnsfOpt::ToTimeValue(argv[argi + 1]);
 						argi++;
-						break;
-
-					case 'f':
+					}
+					else if (strcmp(argv[argi], "-f") == 0)
+					{
 						if (argc <= (argi + 1))
 						{
 							fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
@@ -1328,9 +1327,9 @@ int main(int argc, char *argv[])
 
 						oneshotPostgapLength = SnsfOpt::ToTimeValue(argv[argi + 1]);
 						argi++;
-						break;
-
-					case 's':
+					}
+					else if (strcmp(argv[argi], "-s") == 0)
+					{
 						if (argc <= (argi + 1))
 						{
 							fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
@@ -1339,9 +1338,9 @@ int main(int argc, char *argv[])
 
 						opt.SetOneShotVerifyLength(SnsfOpt::ToTimeValue(argv[argi + 1]));
 						argi++;
-						break;
-
-					default:
+					}
+					else
+					{
 						fprintf(stderr, "Error: Unknown option \"%s\"\n", argv[argi]);
 						return 1;
 					}
