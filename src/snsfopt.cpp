@@ -325,7 +325,7 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 	return load_result;
 }
 
-void SnsfOpt::PatchROM(uint32_t offset, const void * data, uint32_t size)
+void SnsfOpt::PatchROM(uint32_t offset, const void * data, uint32_t size, bool apply_base_offset)
 {
 	if (m_system->rom == NULL)
 	{
@@ -334,6 +334,11 @@ void SnsfOpt::PatchROM(uint32_t offset, const void * data, uint32_t size)
 
 	uint32_t max_rom_size = MAX_SNES_ROM_SIZE;
 	uint8_t * snes_rom = m_system->rom;
+
+	if (apply_base_offset)
+	{
+		offset += snsf_base_offset;
+	}
 
 	if (offset >= max_rom_size)
 	{
@@ -1354,7 +1359,7 @@ int main(int argc, char *argv[])
 					(song >> 16) & 0xff,
 					(song >> 24) & 0xff,
 				};
-				opt.PatchROM(minisnsf_offset, patch, minisnsf_size);
+				opt.PatchROM(minisnsf_offset, patch, minisnsf_size, true);
 				opt.ResetGame();
 
 				opt.Optimize();

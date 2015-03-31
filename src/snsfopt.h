@@ -20,7 +20,7 @@ public:
 
 	bool LoadROM(const uint8_t * rom, uint32_t romsize, const uint8_t * sram, uint32_t sramsize);
 	bool LoadROMFile(const std::string& filename);
-	void PatchROM(uint32_t offset, const void * data, uint32_t size);
+	void PatchROM(uint32_t offset, const void * data, uint32_t size, bool apply_base_offset);
 	void ResetGame(void);
 
 	void ResetOptimizer(void);
