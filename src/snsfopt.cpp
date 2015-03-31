@@ -244,6 +244,7 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 	if (PSFFile::IsPSFFile(filename))
 	{
 		rom_buf = new uint8_t[SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE];
+		memset(rom_buf, 0, SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE);
 
 		sram_buf = new uint8_t[MAX_SNES_SRAM_SIZE];
 		memset(sram_buf, 0xff, MAX_SNES_SRAM_SIZE);
