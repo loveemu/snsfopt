@@ -48,7 +48,7 @@
 
 SnsfOpt::SnsfOpt() :
 	bytes_used(0),
-	optimize_timeout(300.0),
+	optimize_timeout(5.0),
 	optimize_progress_frequency(0.2),
 	time_loop_based(false),
 	target_loop_count(2),
