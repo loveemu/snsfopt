@@ -229,7 +229,7 @@ protected:
 
 	uint32_t paranoid_bytes;
 
-	bool ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size, uint8_t * sram_buf, uint32_t * ptr_sram_size);
+	bool ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size, uint8_t * sram_buf, uint32_t * ptr_sram_size, uint32_t * ptr_base_offset);
 
 	static uint32_t MergeRefs(uint8_t * dst_refs, const uint8_t * src_refs, uint32_t size);
 

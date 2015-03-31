@@ -237,6 +237,7 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 	uint32_t rom_size;
 	uint8_t * sram_buf = NULL;
 	uint32_t sram_size;
+	uint32_t base_offset;
 	bool load_result = false;
 
 	if (PSFFile::IsPSFFile(filename))
@@ -246,7 +247,7 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 		sram_buf = new uint8_t[MAX_SNES_SRAM_SIZE];
 		memset(sram_buf, 0xff, MAX_SNES_SRAM_SIZE);
 
-		load_result = ReadSNSFFile(filename, 0, rom_buf, &rom_size, sram_buf, &sram_size);
+		load_result = ReadSNSFFile(filename, 0, rom_buf, &rom_size, sram_buf, &sram_size, &base_offset);
 		if (load_result)
 		{
 			load_result = LoadROM(rom_buf, rom_size, sram_buf, sram_size);
@@ -353,9 +354,15 @@ void SnsfOpt::ResetGame()
 	m_output.reset_timer();
 }
 
-bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size, uint8_t * sram_buf, uint32_t * ptr_sram_size)
+bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size, uint8_t * sram_buf, uint32_t * ptr_sram_size, uint32_t * ptr_base_offset)
 {
 	bool result;
+
+	if (ptr_base_offset == NULL)
+	{
+		m_message = filename + " - " + "Internal error (base offset must not be null)";
+		return false;
+	}
 
 	// end the nesting hell up
 	if (nesting_level > 10)
@@ -404,6 +411,9 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 		{
 			*ptr_sram_size = 0;
 		}
+
+		// invalidate the base offset
+		*ptr_base_offset = 0xffffffff;
 	}
 
 	// handle _lib file
@@ -411,7 +421,7 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 	bool has_lib = (it_lib != snsf->tags.end() && it_lib->first == "_lib");
 	if (has_lib)
 	{
-		if (!ReadSNSFFile(it_lib->second, nesting_level + 1, rom_buf, ptr_rom_size, sram_buf, ptr_sram_size))
+		if (!ReadSNSFFile(it_lib->second, nesting_level + 1, rom_buf, ptr_rom_size, sram_buf, ptr_sram_size, ptr_base_offset))
 		{
 			delete snsf;
 			chdir(savedcwd);
@@ -436,6 +446,25 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 	// valid load address?
 	uint32_t rom_offset;
 	rom_offset = rom_address & 0x1FFFFFF;
+
+	// first snsf/snsflib?
+	if (*ptr_base_offset == 0xffffffff)
+	{
+		if (rom_offset > 0xff00) // should be 0x7f00 for LoROM, but I don't care
+		{
+			m_message = filename + " - " + "Base offset out of range";
+
+			delete snsf;
+			chdir(savedcwd);
+			return false;
+		}
+
+		*ptr_base_offset = rom_offset;
+	}
+	else
+	{
+		rom_offset += *ptr_base_offset;
+	}
 
 	// check offset and size
 	if (rom_offset + rom_size > (size_t)SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE)
@@ -531,7 +560,7 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 			break;
 		}
 
-		if (!ReadSNSFFile(it_libN->second, nesting_level + 1, rom_buf, ptr_rom_size, sram_buf, ptr_sram_size))
+		if (!ReadSNSFFile(it_libN->second, nesting_level + 1, rom_buf, ptr_rom_size, sram_buf, ptr_sram_size, ptr_base_offset))
 		{
 			delete snsf;
 			chdir(savedcwd);
