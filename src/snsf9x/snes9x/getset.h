@@ -280,10 +280,7 @@ inline uint8 S9xGetByte (uint32 Address)
 
 #ifdef SNSFOPT
 		uint8 * ptrToByte = GetAddress + (Address & 0xffff);
-		if (ptrToByte >= Memory.ROM && ptrToByte < Memory.ROM + CMemory::MAX_ROM_SIZE)
-		{
-			S9xMarkAsRead(ptrToByte);
-		}
+		S9xMarkAsRead(ptrToByte);
 #endif
 
 		return (byte);
@@ -422,6 +419,13 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 	#endif
 		word = READ_WORD(GetAddress + (Address & 0xffff));
 		addCyclesInMemoryAccess_x2;
+
+#ifdef SNSFOPT
+		uint8 * ptrToByte = GetAddress + (Address & 0xffff);
+		S9xMarkAsRead(ptrToByte);
+		S9xMarkAsRead(ptrToByte + 1);
+#endif
+
 		return (word);
 	}
 
