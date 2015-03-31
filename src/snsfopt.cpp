@@ -33,7 +33,7 @@
 #endif
 
 #define APP_NAME    "snsfopt"
-#define APP_VER     "[2015-03-30]"
+#define APP_VER     "[2015-03-31]"
 #define APP_URL     "http://github.com/loveemu/snsfopt"
 
 #define SNSF_PSF_VERSION		0x23
@@ -1485,12 +1485,12 @@ int main(int argc, char *argv[])
 					if (*ext == '\0')
 					{
 						out_path = argv[i];
-						out_path += ".snes";
+						out_path += ".smc";
 					}
 					else
 					{
 						out_path = std::string(argv[i], ext - argv[i]);
-						out_path += ".snes";
+						out_path += ".smc";
 					}
 				}
 				else
@@ -1500,7 +1500,7 @@ int main(int argc, char *argv[])
 					const char *ext = path_findext(out_name.c_str());
 					if (*ext == '\0')
 					{
-						out_path += ".snes";
+						out_path += ".smc";
 					}
 				}
 
