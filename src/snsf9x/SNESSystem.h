@@ -25,6 +25,7 @@ public:
 
 	void CPULoop();
 
+	bool IsHiROM() const;
 	uint32_t GetROMCoverageSize() const;
 
 	uint8_t * rom;

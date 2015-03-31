@@ -143,6 +143,11 @@ void SNESSystem::CPULoop()
 	}
 }
 
+bool SNESSystem::IsHiROM() const
+{
+	return (Memory.HiROM != 0);
+}
+
 uint32_t SNESSystem::GetROMCoverageSize() const
 {
 	return Memory.ROMCoverageSize;

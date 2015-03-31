@@ -792,7 +792,24 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 
 		for (uint32_t offset = 0; offset < size; offset++)
 		{
-			if (rom_refs[offset] != 0 || paranoid_count > 0)
+			bool preserved_area = false;
+
+			if (m_system->IsHiROM())
+			{
+				// SNES header
+				if (offset >= 0xffc0 && offset <= 0xffff) {
+					preserved_area = true;
+				}
+			}
+			else
+			{
+				// SNES header
+				if (offset >= 0x7fc0 && offset <= 0x7fff) {
+					preserved_area = true;
+				}
+			}
+
+			if (preserved_area || rom_refs[offset] != 0 || paranoid_count > 0)
 			{
 				if (rom_refs[offset] != 0)
 				{
