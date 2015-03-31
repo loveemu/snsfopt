@@ -283,6 +283,9 @@ void S9xMainLoop (void)
 
 		if (CPU.PCBase)
 		{
+#ifdef SNSFOPT
+			S9xMarkAsRead(&CPU.PCBase[Registers.PCw]);
+#endif
 			Op = CPU.PCBase[Registers.PCw];
 			CPU.Cycles += CPU.MemSpeed;
 			Opcodes = ICPU.S9xOpcodes;

@@ -200,6 +200,9 @@ static inline uint8 Immediate8Slow (AccessMode a)
 
 static inline uint8 Immediate8 (AccessMode a)
 {
+#ifdef SNSFOPT
+	S9xMarkAsRead(&CPU.PCBase[Registers.PCw]);
+#endif
 	uint8	val = CPU.PCBase[Registers.PCw];
 	if (a & READ)
 		OpenBus = val;
@@ -221,6 +224,10 @@ static inline uint16 Immediate16Slow (AccessMode a)
 
 static inline uint16 Immediate16 (AccessMode a)
 {
+#ifdef SNSFOPT
+	S9xMarkAsRead(&CPU.PCBase[Registers.PCw]);
+	S9xMarkAsRead(&CPU.PCBase[Registers.PCw + 1]);
+#endif
 	uint16	val = READ_WORD(CPU.PCBase + Registers.PCw);
 	if (a & READ)
 		OpenBus = (uint8) (val >> 8);
@@ -364,6 +371,12 @@ static inline uint32 AbsoluteLongSlow (AccessMode a)					// l
 
 static inline uint32 AbsoluteLong (AccessMode a)						// l
 {
+#ifdef SNSFOPT
+	S9xMarkAsRead(&CPU.PCBase[Registers.PCw]);
+	S9xMarkAsRead(&CPU.PCBase[Registers.PCw + 1]);
+	S9xMarkAsRead(&CPU.PCBase[Registers.PCw + 2]);
+	S9xMarkAsRead(&CPU.PCBase[Registers.PCw + 3]);
+#endif
 	uint32	addr = READ_3WORD(CPU.PCBase + Registers.PCw);
 	AddCycles(CPU.MemSpeedx2 + CPU.MemSpeed);
 	if (a & READ)
