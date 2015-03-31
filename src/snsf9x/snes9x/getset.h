@@ -240,6 +240,28 @@ static inline int32 memory_speed (uint32 address)
 	return (TWO_CYCLES);
 }
 
+#ifdef SNSFOPT
+inline bool S9xMarkAsRead(uint8 * ptrToByte)
+{
+	if (ptrToByte >= Memory.ROM && ptrToByte < Memory.ROM + CMemory::MAX_ROM_SIZE)
+	{
+		uint32 offset = ptrToByte - Memory.ROM;
+		if (Memory.ROMCoverage[offset] < 0xff)
+		{
+			if (Memory.ROMCoverage[offset] == 0)
+			{
+				Memory.ROMCoverageSize++;
+			}
+
+			Memory.ROMCoverage[offset]++;
+			Memory.ROMCoverageHistogram[Memory.ROMCoverage[offset]]++;
+		}
+		return true;
+	}
+	return false;
+}
+#endif
+
 inline uint8 S9xGetByte (uint32 Address)
 {
 	int		block = (Address & 0xffffff) >> MEMMAP_SHIFT;
@@ -260,17 +282,7 @@ inline uint8 S9xGetByte (uint32 Address)
 		uint8 * ptrToByte = GetAddress + (Address & 0xffff);
 		if (ptrToByte >= Memory.ROM && ptrToByte < Memory.ROM + CMemory::MAX_ROM_SIZE)
 		{
-			uint32 offset = ptrToByte - Memory.ROM;
-			if (Memory.ROMCoverage[offset] < 0xff)
-			{
-				if (Memory.ROMCoverage[offset] == 0)
-				{
-					Memory.ROMCoverageSize++;
-				}
-
-				Memory.ROMCoverage[offset]++;
-				Memory.ROMCoverageHistogram[Memory.ROMCoverage[offset]]++;
-			}
+			S9xMarkAsRead(ptrToByte);
 		}
 #endif
 

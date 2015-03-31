@@ -745,6 +745,9 @@ bool8 S9xDoDMA (uint8 Channel)
 						case 0x04: // OAMDATA
 							do
 							{
+#ifdef SNSFOPT
+								S9xMarkAsRead(base + p);
+#endif
 								Work = *(base + p);
 								REGISTER_2104(Work);
 								UPDATE_COUNTERS;
@@ -760,6 +763,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
+#ifdef SNSFOPT
+									S9xMarkAsRead(base + p);
+#endif
 									Work = *(base + p);
 									REGISTER_2118_linear(Work);
 									UPDATE_COUNTERS;
@@ -769,6 +775,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
+#ifdef SNSFOPT
+									S9xMarkAsRead(base + p);
+#endif
 									Work = *(base + p);
 									REGISTER_2118_tile(Work);
 									UPDATE_COUNTERS;
@@ -785,6 +794,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
+#ifdef SNSFOPT
+									S9xMarkAsRead(base + p);
+#endif
 									Work = *(base + p);
 									REGISTER_2119_linear(Work);
 									UPDATE_COUNTERS;
@@ -794,6 +806,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
+#ifdef SNSFOPT
+									S9xMarkAsRead(base + p);
+#endif
 									Work = *(base + p);
 									REGISTER_2119_tile(Work);
 									UPDATE_COUNTERS;
@@ -805,6 +820,9 @@ bool8 S9xDoDMA (uint8 Channel)
 						case 0x22: // CGDATA
 							do
 							{
+#ifdef SNSFOPT
+								S9xMarkAsRead(base + p);
+#endif
 								Work = *(base + p);
 #ifdef SNSF9X_REMOVED
 								REGISTER_2122(Work);
@@ -819,6 +837,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
+#ifdef SNSFOPT
+									S9xMarkAsRead(base + p);
+#endif
 									Work = *(base + p);
 									REGISTER_2180(Work);
 									UPDATE_COUNTERS;
@@ -837,6 +858,9 @@ bool8 S9xDoDMA (uint8 Channel)
 						default:
 							do
 							{
+#ifdef SNSFOPT
+								S9xMarkAsRead(base + p);
+#endif
 								Work = *(base + p);
 								S9xSetPPU(Work, 0x2100 + d->BAddress);
 								UPDATE_COUNTERS;
@@ -861,12 +885,18 @@ bool8 S9xDoDMA (uint8 Channel)
 								default:
 								while (count > 1)
 								{
+#ifdef SNSFOPT
+									S9xMarkAsRead(base + p);
+#endif
 									Work = *(base + p);
 									REGISTER_2118_linear(Work);
 									UPDATE_COUNTERS;
 									count--;
 
 								case 1:
+#ifdef SNSFOPT
+									S9xMarkAsRead(base + p);
+#endif
 									Work = *(base + p);
 									REGISTER_2119_linear(Work);
 									UPDATE_COUNTERS;
@@ -876,6 +906,9 @@ bool8 S9xDoDMA (uint8 Channel)
 
 							if (count == 1)
 							{
+#ifdef SNSFOPT
+								S9xMarkAsRead(base + p);
+#endif
 								Work = *(base + p);
 								REGISTER_2118_linear(Work);
 								UPDATE_COUNTERS;
@@ -891,12 +924,18 @@ bool8 S9xDoDMA (uint8 Channel)
 								default:
 								while (count > 1)
 								{
+#ifdef SNSFOPT
+									S9xMarkAsRead(base + p);
+#endif
 									Work = *(base + p);
 									REGISTER_2118_tile(Work);
 									UPDATE_COUNTERS;
 									count--;
 
 								case 1:
+#ifdef SNSFOPT
+									S9xMarkAsRead(base + p);
+#endif
 									Work = *(base + p);
 									REGISTER_2119_tile(Work);
 									UPDATE_COUNTERS;
@@ -906,6 +945,9 @@ bool8 S9xDoDMA (uint8 Channel)
 
 							if (count == 1)
 							{
+#ifdef SNSFOPT
+								S9xMarkAsRead(base + p);
+#endif
 								Work = *(base + p);
 								REGISTER_2118_tile(Work);
 								UPDATE_COUNTERS;
@@ -923,12 +965,18 @@ bool8 S9xDoDMA (uint8 Channel)
 							default:
 							while (count > 1)
 							{
+#ifdef SNSFOPT
+								S9xMarkAsRead(base + p);
+#endif
 								Work = *(base + p);
 								S9xSetPPU(Work, 0x2100 + d->BAddress);
 								UPDATE_COUNTERS;
 								count--;
 
 							case 1:
+#ifdef SNSFOPT
+								S9xMarkAsRead(base + p);
+#endif
 								Work = *(base + p);
 								S9xSetPPU(Work, 0x2101 + d->BAddress);
 								UPDATE_COUNTERS;
@@ -938,6 +986,9 @@ bool8 S9xDoDMA (uint8 Channel)
 
 						if (count == 1)
 						{
+#ifdef SNSFOPT
+							S9xMarkAsRead(base + p);
+#endif
 							Work = *(base + p);
 							S9xSetPPU(Work, 0x2100 + d->BAddress);
 							UPDATE_COUNTERS;
@@ -955,6 +1006,9 @@ bool8 S9xDoDMA (uint8 Channel)
 						default:
 						do
 						{
+#ifdef SNSFOPT
+							S9xMarkAsRead(base + p);
+#endif
 							Work = *(base + p);
 							S9xSetPPU(Work, 0x2100 + d->BAddress);
 							UPDATE_COUNTERS;
@@ -965,6 +1019,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 1:
+#ifdef SNSFOPT
+							S9xMarkAsRead(base + p);
+#endif
 							Work = *(base + p);
 							S9xSetPPU(Work, 0x2100 + d->BAddress);
 							UPDATE_COUNTERS;
@@ -975,6 +1032,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 2:
+#ifdef SNSFOPT
+							S9xMarkAsRead(base + p);
+#endif
 							Work = *(base + p);
 							S9xSetPPU(Work, 0x2101 + d->BAddress);
 							UPDATE_COUNTERS;
@@ -985,6 +1045,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 3:
+#ifdef SNSFOPT
+							S9xMarkAsRead(base + p);
+#endif
 							Work = *(base + p);
 							S9xSetPPU(Work, 0x2101 + d->BAddress);
 							UPDATE_COUNTERS;
@@ -1004,6 +1067,9 @@ bool8 S9xDoDMA (uint8 Channel)
 						default:
 						do
 						{
+#ifdef SNSFOPT
+							S9xMarkAsRead(base + p);
+#endif
 							Work = *(base + p);
 							S9xSetPPU(Work, 0x2100 + d->BAddress);
 							UPDATE_COUNTERS;
@@ -1014,6 +1080,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 1:
+#ifdef SNSFOPT
+							S9xMarkAsRead(base + p);
+#endif
 							Work = *(base + p);
 							S9xSetPPU(Work, 0x2101 + d->BAddress);
 							UPDATE_COUNTERS;
@@ -1024,6 +1093,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 2:
+#ifdef SNSFOPT
+							S9xMarkAsRead(base + p);
+#endif
 							Work = *(base + p);
 							S9xSetPPU(Work, 0x2102 + d->BAddress);
 							UPDATE_COUNTERS;
@@ -1034,6 +1106,9 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 3:
+#ifdef SNSFOPT
+							S9xMarkAsRead(base + p);
+#endif
 							Work = *(base + p);
 							S9xSetPPU(Work, 0x2103 + d->BAddress);
 							UPDATE_COUNTERS;
@@ -1639,11 +1714,18 @@ uint8 S9xDoHDMA (uint8 byte)
 							switch (p->TransferMode)
 							{
 								case 0:
+#ifdef SNSFOPT
+									S9xMarkAsRead(HDMAMemPointers[d]);
+#endif
 									S9xSetPPU(*HDMAMemPointers[d]++, 0x2100 + p->BAddress);
 									ADD_CYCLES(SLOW_ONE_CYCLE);
 									break;
 
 								case 5:
+#ifdef SNSFOPT
+									S9xMarkAsRead(HDMAMemPointers[d] + 0);
+									S9xMarkAsRead(HDMAMemPointers[d] + 1);
+#endif
 									S9xSetPPU(*(HDMAMemPointers[d] + 0), 0x2100 + p->BAddress);
 									ADD_CYCLES(SLOW_ONE_CYCLE);
 									S9xSetPPU(*(HDMAMemPointers[d] + 1), 0x2101 + p->BAddress);
@@ -1651,6 +1733,10 @@ uint8 S9xDoHDMA (uint8 byte)
 									HDMAMemPointers[d] += 2;
 									/* fall through */
 								case 1:
+#ifdef SNSFOPT
+									S9xMarkAsRead(HDMAMemPointers[d] + 0);
+									S9xMarkAsRead(HDMAMemPointers[d] + 1);
+#endif
 									S9xSetPPU(*(HDMAMemPointers[d] + 0), 0x2100 + p->BAddress);
 									ADD_CYCLES(SLOW_ONE_CYCLE);
 									S9xSetPPU(*(HDMAMemPointers[d] + 1), 0x2101 + p->BAddress);
@@ -1660,6 +1746,10 @@ uint8 S9xDoHDMA (uint8 byte)
 
 								case 2:
 								case 6:
+#ifdef SNSFOPT
+									S9xMarkAsRead(HDMAMemPointers[d] + 0);
+									S9xMarkAsRead(HDMAMemPointers[d] + 1);
+#endif
 									S9xSetPPU(*(HDMAMemPointers[d] + 0), 0x2100 + p->BAddress);
 									ADD_CYCLES(SLOW_ONE_CYCLE);
 									S9xSetPPU(*(HDMAMemPointers[d] + 1), 0x2100 + p->BAddress);
@@ -1669,6 +1759,12 @@ uint8 S9xDoHDMA (uint8 byte)
 
 								case 3:
 								case 7:
+#ifdef SNSFOPT
+									S9xMarkAsRead(HDMAMemPointers[d] + 0);
+									S9xMarkAsRead(HDMAMemPointers[d] + 1);
+									S9xMarkAsRead(HDMAMemPointers[d] + 2);
+									S9xMarkAsRead(HDMAMemPointers[d] + 3);
+#endif
 									S9xSetPPU(*(HDMAMemPointers[d] + 0), 0x2100 + p->BAddress);
 									ADD_CYCLES(SLOW_ONE_CYCLE);
 									S9xSetPPU(*(HDMAMemPointers[d] + 1), 0x2100 + p->BAddress);
@@ -1681,6 +1777,12 @@ uint8 S9xDoHDMA (uint8 byte)
 									break;
 
 								case 4:
+#ifdef SNSFOPT
+									S9xMarkAsRead(HDMAMemPointers[d] + 0);
+									S9xMarkAsRead(HDMAMemPointers[d] + 1);
+									S9xMarkAsRead(HDMAMemPointers[d] + 2);
+									S9xMarkAsRead(HDMAMemPointers[d] + 3);
+#endif
 									S9xSetPPU(*(HDMAMemPointers[d] + 0), 0x2100 + p->BAddress);
 									ADD_CYCLES(SLOW_ONE_CYCLE);
 									S9xSetPPU(*(HDMAMemPointers[d] + 1), 0x2101 + p->BAddress);
