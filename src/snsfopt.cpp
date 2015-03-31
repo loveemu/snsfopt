@@ -558,6 +558,22 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 		}
 	}
 
+	// unsupported tags
+	if (snsf->tags.count("_memory") != 0)
+	{
+		fprintf(stderr, "Warning: _memory tag is not supported\n");
+	}
+
+	if (snsf->tags.count("_video") != 0)
+	{
+		fprintf(stderr, "Warning: _video tag is not supported\n");
+	}
+
+	if (snsf->tags.count("_sramfill") != 0)
+	{
+		fprintf(stderr, "Warning: _sramfill tag is not supported\n");
+	}
+
 	// handle _libN files
 	int libN = 2;
 	while (true)
