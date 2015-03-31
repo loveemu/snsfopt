@@ -315,8 +315,6 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 
 			path_basename(tmppath);
 			rom_filename = tmppath;
-
-			snsf_base_offset = 0;
 		}
 
 		fclose(fp);
@@ -1059,6 +1057,10 @@ static void usage(const char * progname, bool extended)
 		printf("  : I am paranoid, and wish to assume that any data \n");
 		printf("    within [bytes] bytes of a used byte, is also used\n");
 		printf("\n");
+		printf("`--offset [load offset]`\n");
+		printf("  : Load offset of the base snsflib file.\n");
+		printf("    (The option works only if the input is SNES ROM file)\n");
+		printf("\n");
 		printf("#### File Processing Modes (-s) (-l) (-f) (-r) (-t)\n");
 		printf("\n");
 		printf("`-f [snsf files]`\n");
@@ -1139,9 +1141,8 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		switch (argv[argi][1])
+		if (argv[argi][1] == 'f')  //regular .snsf optimization. this option doubles as minisnsf->snsf converter
 		{
-		case 'f':  //regular .snsf optimization. this option doubles as minisnsf->snsf converter
 			mode = SNSFOPT_PROC_F;
 
 			if (argc <= (argi + 1))
@@ -1150,9 +1151,9 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 			argi++;
-			break;
-
-		case 'r':
+		}
+		else if (argv[argi][1] == 'r')
+		{
 			mode = SNSFOPT_PROC_R;
 
 			if (argc <= (argi + 1))
@@ -1161,9 +1162,9 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 			argi++;
-			break;
-
-		case 's':  //Song value snsflib optimization.
+		}
+		else if (argv[argi][1] == 's')  //Song value snsflib optimization.
+		{
 			mode = SNSFOPT_PROC_S;
 
 			if (argc <= (argi + 3))
@@ -1172,9 +1173,9 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 			argi++;
-			break;
-
-		case 'l':  //snsflib optimization.
+		}
+		else if (argv[argi][1] == 'l')  //snsflib optimization.
+		{
 			mode = SNSFOPT_PROC_L;
 
 			if (argc <= (argi + 1))
@@ -1183,9 +1184,9 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 			argi++;
-			break;
-
-		case 't':
+		}
+		else if (argv[argi][1] == 't')
+		{
 			mode = SNSFOPT_PROC_T;
 			opt.SetTimeLoopBased(true);
 
@@ -1195,9 +1196,9 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 			argi++;
-			break;
-
-		case 'T': // Optimize while no new data found for.
+		}
+		else if (argv[argi][1] == 'T') // Optimize while no new data found for.
+		{
 			if (argc <= (argi + 1))
 			{
 				fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
@@ -1206,9 +1207,9 @@ int main(int argc, char *argv[])
 
 			opt.SetTimeout(SnsfOpt::ToTimeValue(argv[argi + 1]));
 			argi++;
-			break;
-
-		case 'P': // I am paranoid. assume x bytes within a used byte is also used.
+		}
+		else if (argv[argi][1] == 'P') // I am paranoid. assume x bytes within a used byte is also used.
+		{
 			if (argc <= (argi + 1))
 			{
 				fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
@@ -1223,9 +1224,9 @@ int main(int argc, char *argv[])
 			}
 			opt.SetParanoidSize(l);
 			argi++;
-			break;
-
-		case 'o': // output name
+		}
+		else if (argv[argi][1] == 'o')
+		{
 			if (argc <= (argi + 1))
 			{
 				fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
@@ -1234,9 +1235,26 @@ int main(int argc, char *argv[])
 
 			out_name = argv[argi + 1];
 			argi++;
-			break;
+		}
+		else if (strcmp(argv[argi], "--offset") == 0)
+		{
+			if (argc <= (argi + 1))
+			{
+				fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
+				return 1;
+			}
 
-		default:
+			l = strtol(argv[argi + 1], &endptr, 0);
+			if (*endptr != '\0' || errno == ERANGE || l < 0)
+			{
+				fprintf(stderr, "Error: Number format error \"%s\"\n", argv[argi + 1]);
+				return 1;
+			}
+			opt.SetSNSFBaseOffset((uint32_t)l);
+			argi++;
+		}
+		else
+		{
 			fprintf(stderr, "Error: Unknown option \"%s\"\n", argv[argi]);
 			return 1;
 		}

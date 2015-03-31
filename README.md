@@ -26,6 +26,10 @@ Syntax: `snsfopt [options] [-s or -l or -f or -t] [snsf files]`
   : I am paranoid, and wish to assume that any data within [bytes] bytes of a used byte,
     is also used
 
+`--offset [load offset]`
+  : Load offset of the base snsflib file.
+    (The option works only if the input is SNES ROM file)
+
 #### File Processing Modes
 
 `-f [snsf files]`

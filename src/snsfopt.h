@@ -127,6 +127,11 @@ public:
 		paranoid_bytes = size;
 	}
 
+	inline void SetSNSFBaseOffset(uint32_t base_offset)
+	{
+		snsf_base_offset = base_offset;
+	}
+
 	inline const std::string& message(void) const
 	{
 		return m_message;
