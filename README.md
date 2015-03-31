@@ -1,7 +1,7 @@
 snsfopt
 =======
 
-WORK IN PROGRESS! IT DOES NOT WORK YET!
+SNSF set optimizer / timer, derived from snsf9x and gsfopt.
 
 All ripped sets should be optimized before release, to remove unused code/data unrelated to music playback.
 
