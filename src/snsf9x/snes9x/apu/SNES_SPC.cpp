@@ -466,9 +466,12 @@ inline int SNES_SPC::cpu_read_smp_reg( int reg, rel_time_t time )
 
 int SNES_SPC::cpu_read( int addr, rel_time_t time )
 {
-	MEM_ACCESS( time, addr )
-	
+	MEM_ACCESS(time, addr)
+
 	// RAM
+#ifdef SNSFOPT
+	mark_as_read(addr);
+#endif
 	int result = RAM [addr];
 	int reg = addr - 0xF0;
 	if ( reg >= 0 ) // 40%
@@ -559,6 +562,22 @@ void SNES_SPC::end_frame( time_t end_time )
 	if ( m.buf_begin )
 		save_extra();
 }
+
+#ifdef SNSFOPT
+void SNES_SPC::mark_as_read(uint16_t address)
+{
+	if (m.ram_coverage[address] < 0xff)
+	{
+		if (m.ram_coverage[address] == 0)
+		{
+			m.ram_coverage_size++;
+		}
+
+		m.ram_coverage[address]++;
+		m.ram_coverage_histogram[m.ram_coverage[address]]++;
+	}
+}
+#endif
 
 // Inclusion here allows static memory access functions and better optimization
 #include "SPC_CPU.h"

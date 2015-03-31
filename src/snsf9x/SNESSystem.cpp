@@ -71,8 +71,6 @@ bool8 S9xOpenSoundDevice(void)
 SNESSystem::SNESSystem() :
 	rom(NULL),
 	rom_size(0),
-	rom_refs(NULL),
-	rom_refs_histogram(NULL),
 	m_output(NULL)
 {
 	sound_buffer = new uint8_t[2 * 2 * 48000 / 5];
@@ -118,8 +116,6 @@ void SNESSystem::Reset()
 
 	rom = Memory.ROM;
 	rom_size = Memory.CalculatedSize;
-	rom_refs = Memory.ROMCoverage;
-	rom_refs_histogram = Memory.ROMCoverageHistogram;
 }
 
 void SNESSystem::Term()
@@ -148,7 +144,32 @@ bool SNESSystem::IsHiROM() const
 	return (Memory.HiROM != 0);
 }
 
+const uint8_t * SNESSystem::GetROMCoverage() const
+{
+	return Memory.ROMCoverage;
+}
+
 uint32_t SNESSystem::GetROMCoverageSize() const
 {
 	return Memory.ROMCoverageSize;
+}
+
+const uint32_t * SNESSystem::GetROMCoverageHistogram() const
+{
+	return Memory.ROMCoverageHistogram;
+}
+
+const uint8_t * SNESSystem::GetAPURAMCoverage() const
+{
+	return spc_core->get_ram_coverage();
+}
+
+uint32_t SNESSystem::GetAPURAMCoverageSize() const
+{
+	return spc_core->get_ram_coverage_size();
+}
+
+const uint32_t * SNESSystem::GetAPURAMCoverageHistogram() const
+{
+	return (const uint32_t *)spc_core->get_ram_coverage_histogram();
 }

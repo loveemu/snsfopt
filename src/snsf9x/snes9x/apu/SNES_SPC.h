@@ -117,6 +117,12 @@ public:
 	
 	typedef BOOST::uint16_t uint16_t;
 	
+#ifdef SNSFOPT
+	typedef BOOST::uint32_t uint32_t;
+
+	void mark_as_read(uint16_t address);
+#endif
+
 	// Time relative to m_spc_time. Speeds up code a bit by eliminating need to
 	// constantly add m_spc_time to time from CPU. CPU uses time that ends at
 	// 0 to eliminate reloading end time every instruction. It pays off.
@@ -137,6 +143,12 @@ public:
 	
 	enum { signature_size = 35 };
 	
+#ifdef SNSFOPT
+	const uint8_t * get_ram_coverage() const;
+	uint32_t get_ram_coverage_size() const;
+	const uint32_t * get_ram_coverage_histogram() const;
+#endif
+
 private:
 	SPC_DSP dsp;
 	
@@ -192,6 +204,12 @@ private:
 			uint8_t ram      [0x10000];
 			uint8_t padding2 [0x100];
 		} ram;
+
+#ifdef SNSFOPT
+		uint8_t ram_coverage[0x10000];
+		uint32_t ram_coverage_size;
+		uint32_t ram_coverage_histogram[256];
+#endif
 	};
 	state_t m;
 	
@@ -283,6 +301,12 @@ inline void SNES_SPC::disable_surround( bool disable ) { dsp.disable_surround( d
 
 #if !SPC_NO_COPY_STATE_FUNCS
 inline bool SNES_SPC::check_kon() { return dsp.check_kon(); }
+#endif
+
+#ifdef SNSFOPT
+inline const SNES_SPC::uint8_t * SNES_SPC::get_ram_coverage() const { return m.ram_coverage; }
+inline SNES_SPC::uint32_t SNES_SPC::get_ram_coverage_size() const { return m.ram_coverage_size; }
+inline const SNES_SPC::uint32_t * SNES_SPC::get_ram_coverage_histogram() const { return m.ram_coverage_histogram; }
 #endif
 
 #endif

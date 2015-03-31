@@ -209,7 +209,12 @@ protected:
 
 	uint8_t * rom_refs;
 	uint32_t rom_refs_histogram[256];
-	uint32_t bytes_used;
+	uint32_t rom_bytes_used;
+
+	uint8_t * apuram_refs;
+	uint32_t apuram_refs_histogram[256];
+	uint32_t apuram_bytes_used;
+
 	double song_endpoint;
 	double optimize_timeout;
 	double optimize_endpoint;
@@ -243,9 +248,12 @@ protected:
 	std::string m_message;
 
 private:
+	virtual uint8_t ExpectPossibleLoopCount(const uint32_t * histogram, const uint32_t * new_histogram) const;
+
 	std::string rom_path;
 	std::string rom_filename;
-	uint32_t bytes_used_old;
+	uint32_t rom_bytes_used_old;
+	uint32_t apuram_bytes_used_old;
 };
 
 #endif

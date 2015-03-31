@@ -26,12 +26,17 @@ public:
 	void CPULoop();
 
 	bool IsHiROM() const;
+
+	const uint8_t * GetROMCoverage() const;
 	uint32_t GetROMCoverageSize() const;
+	const uint32_t * GetROMCoverageHistogram() const;
+
+	const uint8_t * GetAPURAMCoverage() const;
+	uint32_t GetAPURAMCoverageSize() const;
+	const uint32_t * GetAPURAMCoverageHistogram() const;
 
 	uint8_t * rom;
 	uint32_t rom_size;
-	uint8_t * rom_refs;
-	uint32_t * rom_refs_histogram;
 
 protected:
 	SNESSoundOut * m_output;

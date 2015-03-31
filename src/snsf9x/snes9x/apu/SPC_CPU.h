@@ -25,6 +25,12 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 #define CPU_WRITE( time, offset, addr, data )\
 	cpu_write( data, addr, time + offset )
 
+#ifdef SNSFOPT
+#define MARK_AS_READ( addr )	mark_as_read( addr )
+#else
+#define MARK_AS_READ( addr )
+#endif
+
 #if SPC_MORE_ACCURACY
 	#define CPU_READ_TIMER( time, offset, addr, out )\
 		{ out = CPU_READ( time, offset, addr ); }
@@ -47,6 +53,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 		else\
 		{\
 			out = ram [dp_addr];\
+			MARK_AS_READ(dp_addr); \
 			int i = dp_addr - 0xF0;\
 			if ( (unsigned) i < 0x10 )\
 				out = cpu_read_smp_reg( i, adj_time );\
@@ -288,6 +295,9 @@ loop:
 		{
 			int i = dp + temp;
 			ram [i] = (uint8_t) data;
+#ifdef SNSFOPT
+			mark_as_read(i);
+#endif
 			i -= 0xF0;
 			if ( (unsigned) i < 0x10 ) // 76%
 			{
@@ -311,6 +321,9 @@ loop:
 		{
 			int i = dp + data;
 			ram [i] = (uint8_t) a;
+#ifdef SNSFOPT
+			mark_as_read(i);
+#endif
 			i -= 0xF0;
 			if ( (unsigned) i < 0x10 ) // 39%
 			{
@@ -326,12 +339,12 @@ loop:
 		#else
 			WRITE_DP( 0, data, a );
 		#endif
-		goto loop;
-	
+			goto loop;
+
 #define CASE( n )   case n:
 
-// Define common address modes based on opcode for immediate mode. Execution
-// ends with data set to the address of the operand.
+			// Define common address modes based on opcode for immediate mode. Execution
+			// ends with data set to the address of the operand.
 #define ADDR_MODES_( op )\
 	CASE( op - 0x02 ) /* (X) */\
 		data = x + dp;\
@@ -339,9 +352,11 @@ loop:
 		goto end_##op;\
 	CASE( op + 0x0F ) /* (dp)+Y */\
 		data = READ_PROG16( data + dp ) + y;\
+		MARK_AS_READ( data + dp ); \
 		goto end_##op;\
 	CASE( op - 0x01 ) /* (dp+X) */\
 		data = READ_PROG16( ((uint8_t) (data + x)) + dp );\
+		MARK_AS_READ( ((uint8_t) (data + x)) + dp ); \
 		goto end_##op;\
 	CASE( op + 0x0E ) /* abs+Y */\
 		data += y;\
@@ -961,7 +976,10 @@ loop:
 		int ret_addr = GET_PC();
 		SUSPICIOUS_OPCODE( "BRK" );
 		SET_PC( READ_PROG16( 0xFFDE ) ); // vector address verified
-		PUSH16( ret_addr );
+#ifdef SNSFOPT
+		mark_as_read( 0xFFDE );
+#endif
+		PUSH16(ret_addr);
 		GET_PSW( temp );
 		psw = (psw | b10) & ~i04;
 		PUSH( temp );

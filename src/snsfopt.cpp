@@ -33,7 +33,7 @@
 #endif
 
 #define APP_NAME    "snsfopt"
-#define APP_VER     "[2015-03-31]"
+#define APP_VER     "[2015-04-01]"
 #define APP_URL     "http://github.com/loveemu/snsfopt"
 
 #define SNSF_PSF_VERSION		0x23
@@ -46,8 +46,11 @@
 
 #define MAX_SNES_SRAM_SIZE	0x20000
 
+#define SNES_APU_RAM_SIZE	0x10000
+
 SnsfOpt::SnsfOpt() :
-	bytes_used(0),
+	rom_bytes_used(0),
+	apuram_bytes_used(0),
 	optimize_timeout(5.0),
 	optimize_progress_frequency(0.2),
 	time_loop_based(false),
@@ -59,6 +62,7 @@ SnsfOpt::SnsfOpt() :
 {
 	m_system = new SNESSystem;
 	rom_refs = new uint8_t[SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE];
+	apuram_refs = new uint8_t[SNES_APU_RAM_SIZE];
 
 	ResetOptimizer();
 }
@@ -73,7 +77,12 @@ SnsfOpt::~SnsfOpt()
 
 	if (rom_refs != NULL)
 	{
-		delete [] rom_refs;
+		delete[] rom_refs;
+	}
+
+	if (apuram_refs != NULL)
+	{
+		delete[] apuram_refs;
 	}
 }
 
@@ -216,7 +225,7 @@ bool SnsfOpt::LoadROM(const uint8_t * rom, uint32_t romsize, const uint8_t * sra
 
 	if (m_system->rom != NULL)
 	{
-		MergeRefs(rom_refs, m_system->rom_refs, GetROMSize());
+		MergeRefs(rom_refs, m_system->GetROMCoverage(), GetROMSize());
 		m_system->Term();
 	}
 
@@ -360,7 +369,7 @@ void SnsfOpt::ResetGame()
 		return;
 	}
 
-	MergeRefs(rom_refs, m_system->rom_refs, GetROMSize());
+	MergeRefs(rom_refs, m_system->GetROMCoverage(), GetROMSize());
 	m_system->Reset();
 	m_output.reset_timer();
 }
@@ -605,14 +614,19 @@ void SnsfOpt::ResetOptimizer(void)
 {
 	memset(rom_refs, 0, MAX_SNES_ROM_SIZE);
 	memset(rom_refs_histogram, 0, sizeof(rom_refs_histogram));
-	bytes_used = 0;
+	rom_bytes_used = 0;
+
+	memset(apuram_refs, 0, SNES_APU_RAM_SIZE);
+	memset(apuram_refs_histogram, 0, sizeof(apuram_refs_histogram));
+	apuram_bytes_used = 0;
 }
 
 void SnsfOpt::Optimize(void)
 {
 	timer_init();
 
-	bytes_used_old = m_system->GetROMCoverageSize();
+	rom_bytes_used_old = m_system->GetROMCoverageSize();
+	apuram_bytes_used_old = m_system->GetAPURAMCoverageSize();
 	time_last_new_data = m_output.get_timer();
 
 	for (int i = 0; i < 256; i++)
@@ -629,11 +643,11 @@ void SnsfOpt::Optimize(void)
 
 	do
 	{
-		bytes_used_old = m_system->GetROMCoverageSize();
+		rom_bytes_used_old = m_system->GetROMCoverageSize();
 		m_system->CPULoop();
 
 		// any updates?
-		if (m_system->GetROMCoverageSize() != bytes_used_old)
+		if (m_system->GetROMCoverageSize() != rom_bytes_used_old)
 		{
 			time_last_new_data = m_output.get_timer();
 		}
@@ -667,14 +681,39 @@ void SnsfOpt::Optimize(void)
 	ShowOptimizeResult();
 }
 
-void SnsfOpt::DetectLoop()
+uint8_t SnsfOpt::ExpectPossibleLoopCount(const uint32_t * histogram, const uint32_t * new_histogram) const
 {
 	// detect possible maximum value of loop count at the moment
 	uint8_t loop_count_expected_upper = 255;
 
 	for (int count = 1; count < 256; count++)
 	{
-		if (rom_refs_histogram[count] != m_system->rom_refs_histogram[count])
+		if (histogram[count] != new_histogram[count])
+		{
+			loop_count_expected_upper = count - 1;
+			break;
+		}
+	}
+
+	return loop_count_expected_upper;
+}
+
+void SnsfOpt::DetectLoop()
+{
+	// detect possible maximum value of loop count at the moment
+	uint8_t loop_count_expected_upper = ExpectPossibleLoopCount(rom_refs_histogram, m_system->GetROMCoverageHistogram());
+
+	// check APU RAM as well, if timer is required
+	if (time_loop_based) {
+		uint8_t apu_loop_count_expected_upper = ExpectPossibleLoopCount(apuram_refs_histogram, m_system->GetAPURAMCoverageHistogram());
+		if (apu_loop_count_expected_upper < loop_count_expected_upper) {
+			loop_count_expected_upper = apu_loop_count_expected_upper;
+		}
+	}
+
+	for (int count = 1; count < 256; count++)
+	{
+		if (rom_refs_histogram[count] != (m_system->GetROMCoverageHistogram())[count])
 		{
 			loop_count_expected_upper = count - 1;
 			break;
@@ -709,7 +748,8 @@ void SnsfOpt::DetectLoop()
 	}
 
 	// update histogram
-	memcpy(rom_refs_histogram, m_system->rom_refs_histogram, sizeof(rom_refs_histogram));
+	memcpy(rom_refs_histogram, m_system->GetROMCoverageHistogram(), sizeof(rom_refs_histogram));
+	memcpy(apuram_refs_histogram, m_system->GetAPURAMCoverageHistogram(), sizeof(apuram_refs_histogram));
 }
 
 void SnsfOpt::DetectOneShot()
@@ -842,7 +882,7 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 	{
 		uint8_t * rom_refs = new uint8_t[size];
 		memcpy(rom_refs, this->rom_refs, size);
-		MergeRefs(rom_refs, m_system->rom_refs, size);
+		MergeRefs(rom_refs, m_system->GetROMCoverage(), size);
 
 		uint32_t paranoid_count = 0;
 
