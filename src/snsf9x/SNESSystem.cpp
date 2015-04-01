@@ -69,7 +69,6 @@ bool8 S9xOpenSoundDevice(void)
 }
 
 SNESSystem::SNESSystem() :
-	rom(NULL),
 	rom_size(0),
 	m_output(NULL)
 {
@@ -114,7 +113,6 @@ void SNESSystem::Reset()
 {
 	S9xReset();
 
-	rom = Memory.ROM;
 	rom_size = Memory.CalculatedSize;
 }
 
@@ -139,9 +137,41 @@ void SNESSystem::CPULoop()
 	}
 }
 
+bool SNESSystem::IsLoaded() const
+{
+	return (Memory.ROM != NULL);
+}
+
 bool SNESSystem::IsHiROM() const
 {
 	return (Memory.HiROM != 0);
+}
+
+uint8_t * GetROMPointer()
+{
+	return Memory.ROM;
+}
+
+void SNESSystem::ReadROM(void * buffer, size_t size, uint32_t file_offset) const
+{
+	uint32_t buf_offset = 0;
+	for (uint32_t off = file_offset; off < file_offset + size; off++)
+	{
+		uint32_t mem_offset = Memory.FileToROMOffsetMap[off];
+		((uint8_t *)buffer)[buf_offset] = Memory.ROM[mem_offset];
+		buf_offset++;
+	}
+}
+
+void SNESSystem::WriteROM(const void * buffer, size_t size, uint32_t file_offset)
+{
+	uint32_t buf_offset = 0;
+	for (uint32_t off = file_offset; off < file_offset + size; off++)
+	{
+		uint32_t mem_offset = Memory.FileToROMOffsetMap[off];
+		Memory.ROM[mem_offset] = ((uint8_t *)buffer)[buf_offset];
+		buf_offset++;
+	}
 }
 
 const uint8_t * SNESSystem::GetROMCoverage() const

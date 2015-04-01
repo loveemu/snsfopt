@@ -236,6 +236,9 @@ struct CMemory
 	uint8	*BIOSROM;
 
 #ifdef SNSFOPT
+	uint32	*ROMToFileOffsetMap;
+	uint32	*FileToROMOffsetMap;
+
 	uint8	*ROMCoverage;
 	uint32	ROMCoverageSize;
 	uint32	ROMCoverageHistogram[256];

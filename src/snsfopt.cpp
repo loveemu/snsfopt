@@ -223,7 +223,7 @@ bool SnsfOpt::LoadROM(const uint8_t * rom, uint32_t romsize, const uint8_t * sra
 	rom_path = "";
 	rom_filename = "";
 
-	if (m_system->rom != NULL)
+	if (m_system->IsLoaded())
 	{
 		MergeRefs(rom_refs, m_system->GetROMCoverage(), GetROMSize());
 		m_system->Term();
@@ -335,13 +335,12 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 
 void SnsfOpt::PatchROM(uint32_t offset, const void * data, uint32_t size, bool apply_base_offset)
 {
-	if (m_system->rom == NULL)
+	if (!m_system->IsLoaded())
 	{
 		return;
 	}
 
 	uint32_t max_rom_size = MAX_SNES_ROM_SIZE;
-	uint8_t * snes_rom = m_system->rom;
 
 	if (apply_base_offset)
 	{
@@ -357,12 +356,12 @@ void SnsfOpt::PatchROM(uint32_t offset, const void * data, uint32_t size, bool a
 		size = max_rom_size - offset;
 	}
 
-	memcpy(&snes_rom[offset], data, size);
+	m_system->WriteROM(data, size, offset);
 }
 
 void SnsfOpt::ResetGame()
 {
-	if (m_system->rom == NULL)
+	if (!m_system->IsLoaded())
 	{
 		return;
 	}
@@ -863,10 +862,9 @@ uint32_t SnsfOpt::MergeRefs(uint8_t * dst_refs, const uint8_t * src_refs, uint32
 
 bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 {
-	uint8_t * snes_rom = m_system->rom;
 	uint32_t rom_size = GetROMSize();
 
-	if (m_system->rom == NULL)
+	if (!m_system->IsLoaded())
 	{
 		return false;
 	}
@@ -886,24 +884,7 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 
 		for (uint32_t offset = 0; offset < size; offset++)
 		{
-			bool preserved_area = false;
-
-			if (m_system->IsHiROM())
-			{
-				// SNES header
-				if (offset >= 0xffc0 && offset <= 0xffff) {
-					preserved_area = true;
-				}
-			}
-			else
-			{
-				// SNES header
-				if (offset >= 0x7fc0 && offset <= 0x7fff) {
-					preserved_area = true;
-				}
-			}
-
-			if (preserved_area || rom_refs[offset] != 0 || paranoid_count > 0)
+			if (rom_refs[offset] != 0 || paranoid_count > 0)
 			{
 				if (rom_refs[offset] != 0)
 				{
@@ -914,7 +895,7 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 					paranoid_count--;
 				}
 
-				((uint8_t *)rom)[offset] = snes_rom[offset];
+				m_system->ReadROM(&((uint8_t *)rom)[offset], 1, offset);
 			}
 			else
 			{
@@ -926,7 +907,7 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 	}
 	else
 	{
-		memcpy(rom, snes_rom, size);
+		m_system->ReadROM(rom, size, 0);
 	}
 
 	return true;

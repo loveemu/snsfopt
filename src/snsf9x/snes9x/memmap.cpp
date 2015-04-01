@@ -934,9 +934,15 @@ static const uint32	crc32Table[256] =
 	0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-static void S9xDeinterleaveType1 (int, uint8 *);
-static void S9xDeinterleaveType2 (int, uint8 *);
-static void S9xDeinterleaveGD24 (int, uint8 *);
+#ifdef SNSFOPT
+static void S9xDeinterleaveType1(int, uint8 *, uint32 * = NULL);
+static void S9xDeinterleaveType2(int, uint8 *, uint32 * = NULL);
+static void S9xDeinterleaveGD24(int, uint8 *, uint32 * = NULL);
+#else
+static void S9xDeinterleaveType1(int, uint8 *);
+static void S9xDeinterleaveType2(int, uint8 *);
+static void S9xDeinterleaveGD24(int, uint8 *);
+#endif
 static bool8 allASCII (uint8 *, int);
 static bool8 is_SufamiTurbo_BIOS (uint8 *, uint32);
 static bool8 is_SufamiTurbo_Cart (uint8 *, uint32);
@@ -966,7 +972,11 @@ static int unzFindExtension (unzFile &, const char *, bool restart = TRUE, bool 
 #endif
 // deinterleave
 
+#ifdef SNSFOPT
+static void S9xDeinterleaveType1 (int size, uint8 *base, uint32 *offsetmap)
+#else
 static void S9xDeinterleaveType1 (int size, uint8 *base)
+#endif
 {
 	Settings.DisplayColor = BUILD_PIXEL(0, 31, 0);
 	SET_UI_COLOR(0, 255, 0);
@@ -980,7 +990,11 @@ static void S9xDeinterleaveType1 (int size, uint8 *base)
 		blocks[i * 2 + 1] = i;
 	}
 
+#ifdef SNSFOPT
+	uint8	*tmp = (uint8 *) malloc(sizeof(uint32) * 0x8000);
+#else
 	uint8	*tmp = (uint8 *) malloc(0x8000);
+#endif
 	if (tmp)
 	{
 		for (int i = 0; i < nblocks * 2; i++)
@@ -992,6 +1006,14 @@ static void S9xDeinterleaveType1 (int size, uint8 *base)
 					memmove(tmp, &base[blocks[j] * 0x8000], 0x8000);
 					memmove(&base[blocks[j] * 0x8000], &base[blocks[i] * 0x8000], 0x8000);
 					memmove(&base[blocks[i] * 0x8000], tmp, 0x8000);
+#ifdef SNSFOPT
+					if (offsetmap != NULL)
+					{
+						memmove(tmp, &offsetmap[blocks[j] * 0x8000], sizeof(uint32) * 0x8000);
+						memmove(&offsetmap[blocks[j] * 0x8000], &offsetmap[blocks[i] * 0x8000], sizeof(uint32) * 0x8000);
+						memmove(&offsetmap[blocks[i] * 0x8000], tmp, sizeof(uint32) * 0x8000);
+					}
+#endif
 					uint8	b = blocks[j];
 					blocks[j] = blocks[i];
 					blocks[i] = b;
@@ -1004,7 +1026,11 @@ static void S9xDeinterleaveType1 (int size, uint8 *base)
 	}
 }
 
-static void S9xDeinterleaveType2 (int size, uint8 *base)
+#ifdef SNSFOPT
+static void S9xDeinterleaveType2(int size, uint8 *base, uint32 *offsetmap)
+#else
+static void S9xDeinterleaveType2(int size, uint8 *base)
+#endif
 {
 	// for odd Super FX images
 	Settings.DisplayColor = BUILD_PIXEL(31, 14, 6);
@@ -1021,7 +1047,11 @@ static void S9xDeinterleaveType2 (int size, uint8 *base)
 	for (int i = 0; i < nblocks * 2; i++)
 		blocks[i] = (i & ~0xf) | ((i & 3) << 2) | ((i & 12) >> 2);
 
-	uint8	*tmp = (uint8 *) malloc(0x10000);
+#ifdef SNSFOPT
+	uint8	*tmp = (uint8 *)malloc(sizeof(uint32) * 0x10000);
+#else
+	uint8	*tmp = (uint8 *)malloc(0x10000);
+#endif
 	if (tmp)
 	{
 		for (int i = 0; i < nblocks * 2; i++)
@@ -1033,6 +1063,14 @@ static void S9xDeinterleaveType2 (int size, uint8 *base)
 					memmove(tmp, &base[blocks[j] * 0x10000], 0x10000);
 					memmove(&base[blocks[j] * 0x10000], &base[blocks[i] * 0x10000], 0x10000);
 					memmove(&base[blocks[i] * 0x10000], tmp, 0x10000);
+#ifdef SNSFOPT
+					if (offsetmap != NULL)
+					{
+						memmove(tmp, &offsetmap[blocks[j] * 0x10000], sizeof(uint32) * 0x10000);
+						memmove(&offsetmap[blocks[j] * 0x10000], &offsetmap[blocks[i] * 0x10000], sizeof(uint32) * 0x10000);
+						memmove(&offsetmap[blocks[i] * 0x10000], tmp, sizeof(uint32) * 0x10000);
+					}
+#endif
 					uint8	b = blocks[j];
 					blocks[j] = blocks[i];
 					blocks[i] = b;
@@ -1045,7 +1083,11 @@ static void S9xDeinterleaveType2 (int size, uint8 *base)
 	}
 }
 
-static void S9xDeinterleaveGD24 (int size, uint8 *base)
+#ifdef SNSFOPT
+static void S9xDeinterleaveGD24(int size, uint8 *base, uint32 *offsetmap)
+#else
+static void S9xDeinterleaveGD24(int size, uint8 *base)
+#endif
 {
 	// for 24Mb images dumped with Game Doctor
 	if (size != 0x300000)
@@ -1054,7 +1096,11 @@ static void S9xDeinterleaveGD24 (int size, uint8 *base)
 	Settings.DisplayColor = BUILD_PIXEL(0, 31, 31);
 	SET_UI_COLOR(0, 255, 255);
 
-	uint8	*tmp = (uint8 *) malloc(0x80000);
+#ifdef SNSFOPT
+	uint8	*tmp = (uint8 *) malloc(sizeof(uint32) * 0x80000);
+#else
+	uint8	*tmp = (uint8 *)malloc(0x80000);
+#endif
 	if (tmp)
 	{
 		memmove(tmp, &base[0x180000], 0x80000);
@@ -1062,9 +1108,23 @@ static void S9xDeinterleaveGD24 (int size, uint8 *base)
 		memmove(&base[0x200000], &base[0x280000], 0x80000);
 		memmove(&base[0x280000], tmp, 0x80000);
 
+#ifdef SNSFOPT
+		if (offsetmap != NULL)
+		{
+			memmove(tmp, &offsetmap[0x180000], sizeof(uint32) * 0x80000);
+			memmove(&offsetmap[0x180000], &offsetmap[0x200000], sizeof(uint32) * 0x80000);
+			memmove(&offsetmap[0x200000], &offsetmap[0x280000], sizeof(uint32) * 0x80000);
+			memmove(&offsetmap[0x280000], tmp, sizeof(uint32) * 0x80000);
+		}
+#endif
+
 		free(tmp);
 
+#ifdef SNSFOPT
+		S9xDeinterleaveType1(size, base, offsetmap);
+#else
 		S9xDeinterleaveType1(size, base);
+#endif
 	}
 }
 
@@ -1078,7 +1138,10 @@ bool8 CMemory::Init (void)
     ROM  = (uint8 *) malloc(MAX_ROM_SIZE + 0x200 + 0x8000);
 
 #ifdef SNSFOPT
-	ROMCoverage = (uint8 *) malloc(MAX_ROM_SIZE);
+	ROMToFileOffsetMap = (uint32 *)malloc(sizeof(uint32) * MAX_ROM_SIZE);
+	FileToROMOffsetMap = (uint32 *)malloc(sizeof(uint32) * MAX_ROM_SIZE);
+	ROMCoverage = (uint8 *)malloc(MAX_ROM_SIZE);
+	ZeroMemory(ROMCoverage, MAX_ROM_SIZE);
 #endif
 
 	IPPU.TileCache[TILE_2BIT]       = (uint8 *) malloc(MAX_2BIT_TILES * 64);
@@ -1147,6 +1210,14 @@ bool8 CMemory::Init (void)
 	// unallocated memory (can cause crash on some ports).
 
 	ROM += 0x8000;
+
+#ifdef SNSFOPT
+	// setup the offset map for interleaved ROM
+	for (uint32 offset = 0; offset < MAX_ROM_SIZE; offset++)
+	{
+		ROMToFileOffsetMap[offset] = offset;
+	}
+#endif
 
 	C4RAM   = ROM + 0x400000 + 8192 * 8; // C4
 	OBC1RAM = ROM + 0x400000; // OBC1
@@ -1608,7 +1679,11 @@ again:
 		((ROM[0xfffc] + (ROM[0xfffd] << 8)) < 0x8000))
 	{
 		if (!Settings.ForceInterleaved && !Settings.ForceNotInterleaved)
+#ifdef SNSFOPT
+			S9xDeinterleaveType1(totalFileSize, ROM, ROMToFileOffsetMap);
+#else
 			S9xDeinterleaveType1(totalFileSize, ROM);
+#endif
 	}
 
 	// CalculatedSize is now set, so rescore
@@ -1648,6 +1723,9 @@ again:
 		// ignore map type byte if not 0x2x or 0x3x
 		if ((RomHeader[0x7fd5] & 0xf0) == 0x20 || (RomHeader[0x7fd5] & 0xf0) == 0x30)
 		{
+#ifdef SNSFOPT
+			S9xMarkAsRead(&RomHeader[0x7fd5]);
+#endif
 			switch (RomHeader[0x7fd5] & 0xf)
 			{
 				case 1:
@@ -1668,6 +1746,9 @@ again:
 
 		if ((RomHeader[0xffd5] & 0xf0) == 0x20 || (RomHeader[0xffd5] & 0xf0) == 0x30)
 		{
+#ifdef SNSFOPT
+			S9xMarkAsRead(&RomHeader[0xffd5]);
+#endif
 			switch (RomHeader[0xffd5] & 0xf)
 			{
 				case 0:
@@ -1699,13 +1780,23 @@ again:
 		{
 			if (ExtendedFormat == BIGFIRST)
 			{
+#ifdef SNSFOPT
+				S9xDeinterleaveType1(0x400000, ROM, ROMToFileOffsetMap);
+				S9xDeinterleaveType1(CalculatedSize - 0x400000, ROM + 0x400000, ROMToFileOffsetMap + 0x400000);
+#else
 				S9xDeinterleaveType1(0x400000, ROM);
 				S9xDeinterleaveType1(CalculatedSize - 0x400000, ROM + 0x400000);
+#endif
 			}
 			else
 			{
+#ifdef SNSFOPT
+				S9xDeinterleaveType1(CalculatedSize - 0x400000, ROM, ROMToFileOffsetMap);
+				S9xDeinterleaveType1(0x400000, ROM + CalculatedSize - 0x400000, ROMToFileOffsetMap + CalculatedSize - 0x400000);
+#else
 				S9xDeinterleaveType1(CalculatedSize - 0x400000, ROM);
 				S9xDeinterleaveType1(0x400000, ROM + CalculatedSize - 0x400000);
+#endif
 			}
 
 			LoROM = FALSE;
@@ -1717,17 +1808,29 @@ again:
 			bool8	t = LoROM;
 			LoROM = HiROM;
 			HiROM = t;
+#ifdef SNSFOPT
+			S9xDeinterleaveGD24(CalculatedSize, ROM, ROMToFileOffsetMap);
+#else
 			S9xDeinterleaveGD24(CalculatedSize, ROM);
+#endif
 		}
 		else
 		if (Settings.ForceInterleaved2)
+#ifdef SNSFOPT
+			S9xDeinterleaveType2(CalculatedSize, ROM, ROMToFileOffsetMap);
+#else
 			S9xDeinterleaveType2(CalculatedSize, ROM);
+#endif
 		else
 		{
 			bool8	t = LoROM;
 			LoROM = HiROM;
 			HiROM = t;
+#ifdef SNSFOPT
+			S9xDeinterleaveType1(CalculatedSize, ROM, ROMToFileOffsetMap);
+#else
 			S9xDeinterleaveType1(CalculatedSize, ROM);
+#endif
 		}
 
 		hi_score = ScoreHiROM(FALSE);
@@ -1752,13 +1855,22 @@ again:
 
 	if (tales)
 	{
+#ifdef SNSFOPT
+		uint8	*tmp = (uint8 *) malloc(sizeof(uint32) * (CalculatedSize - 0x400000));
+#else
 		uint8	*tmp = (uint8 *) malloc(CalculatedSize - 0x400000);
+#endif
 		if (tmp)
 		{
 			S9xMessage(S9X_INFO, S9X_ROM_INTERLEAVED_INFO, "Fixing swapped ExHiROM...");
 			memmove(tmp, ROM, CalculatedSize - 0x400000);
 			memmove(ROM, ROM + CalculatedSize - 0x400000, 0x400000);
 			memmove(ROM + 0x400000, tmp, CalculatedSize - 0x400000);
+#ifdef SNSFOPT
+			memmove(tmp, ROMToFileOffsetMap, sizeof(uint32) * (CalculatedSize - 0x400000));
+			memmove(ROMToFileOffsetMap, ROMToFileOffsetMap + CalculatedSize - 0x400000, sizeof(uint32) * 0x400000);
+			memmove(ROMToFileOffsetMap + 0x400000, tmp, sizeof(uint32) * (CalculatedSize - 0x400000));
+#endif
 			free(tmp);
 		}
 	}
@@ -1783,6 +1895,13 @@ again:
 
 	S9xInitCheatData();
 	S9xApplyCheats();
+#endif
+
+#ifdef SNSFOPT
+	for (uint32 offset = 0; offset < MAX_ROM_SIZE; offset++)
+	{
+		FileToROMOffsetMap[ROMToFileOffsetMap[offset]] = offset;
+	}
 #endif
 
 	S9xReset();
@@ -3146,6 +3265,11 @@ void CMemory::Map_SuperFXLoROMMap (void)
 	{
 		memmove(&ROM[0x200000 + c * 0x10000], &ROM[c * 0x8000], 0x8000);
 		memmove(&ROM[0x208000 + c * 0x10000], &ROM[c * 0x8000], 0x8000);
+
+#ifdef SNSFOPT
+		memmove(&ROMToFileOffsetMap[0x200000 + c * 0x10000], &ROMToFileOffsetMap[c * 0x8000], sizeof(uint32) * 0x8000);
+		memmove(&ROMToFileOffsetMap[0x208000 + c * 0x10000], &ROMToFileOffsetMap[c * 0x8000], sizeof(uint32) * 0x8000);
+#endif
 	}
 
 	map_lorom(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize);

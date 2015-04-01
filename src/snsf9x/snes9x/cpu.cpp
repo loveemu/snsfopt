@@ -286,6 +286,19 @@ void S9xReset (void)
 	memset(Memory.ROMCoverage, 0x00, CMemory::MAX_ROM_SIZE);
 	memset(Memory.ROMCoverageHistogram, 0x00, sizeof(uint32) * 256);
 	Memory.ROMCoverageSize = 0;
+
+	for (uint32 offset = 0x7fb0; offset <= 0x7fff; offset++)
+	{
+		S9xMarkAsRead(&Memory.ROM[offset]);
+		S9xMarkAsRead(&Memory.ROM[offset + 0x8000]);
+
+		if (Memory.ExtendedFormat != CMemory::NOPE)
+		{
+			S9xMarkAsRead(&Memory.ROM[0x400000 + offset]);
+			S9xMarkAsRead(&Memory.ROM[0x400000 + offset + 0x8000]);
+		}
+	}
+
 #endif
 
 #ifdef SNSF9X_REMOVED

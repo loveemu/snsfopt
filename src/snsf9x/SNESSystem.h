@@ -25,7 +25,12 @@ public:
 
 	void CPULoop();
 
+	bool IsLoaded() const;
 	bool IsHiROM() const;
+
+	uint8_t * GetROMPointer();
+	void ReadROM(void * buffer, size_t size, uint32_t file_offset) const;
+	void WriteROM(const void * buffer, size_t size, uint32_t file_offset);
 
 	const uint8_t * GetROMCoverage() const;
 	uint32_t GetROMCoverageSize() const;
@@ -35,7 +40,6 @@ public:
 	uint32_t GetAPURAMCoverageSize() const;
 	const uint32_t * GetAPURAMCoverageHistogram() const;
 
-	uint8_t * rom;
 	uint32_t rom_size;
 
 protected:
