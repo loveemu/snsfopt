@@ -609,7 +609,7 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 
 void SnsfOpt::ResetOptimizer(void)
 {
-	memset(rom_refs, 0, MAX_SNES_ROM_SIZE);
+	memset(rom_refs, 0, SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE);
 	memset(rom_refs_histogram, 0, sizeof(rom_refs_histogram));
 	rom_bytes_used = 0;
 
@@ -882,11 +882,13 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 
 		uint32_t paranoid_count = 0;
 
-		for (uint32_t offset = 0; offset < size; offset++)
+		for (uint32_t file_offset = 0; file_offset < size; file_offset++)
 		{
-			if (rom_refs[offset] != 0 || paranoid_count > 0)
+			uint32_t mem_offset = m_system->GetMemoryOffset(file_offset);
+
+			if (rom_refs[mem_offset] != 0 || paranoid_count > 0)
 			{
-				if (rom_refs[offset] != 0)
+				if (rom_refs[mem_offset] != 0)
 				{
 					paranoid_count = paranoid_bytes;
 				}
@@ -895,11 +897,11 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 					paranoid_count--;
 				}
 
-				m_system->ReadROM(&((uint8_t *)rom)[offset], 1, offset);
+				m_system->ReadROM(&((uint8_t *)rom)[file_offset], 1, file_offset);
 			}
 			else
 			{
-				((uint8_t *)rom)[offset] = 0;
+				((uint8_t *)rom)[file_offset] = 0;
 			}
 		}
 

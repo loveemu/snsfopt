@@ -1211,14 +1211,6 @@ bool8 CMemory::Init (void)
 
 	ROM += 0x8000;
 
-#ifdef SNSFOPT
-	// setup the offset map for interleaved ROM
-	for (uint32 offset = 0; offset < MAX_ROM_SIZE; offset++)
-	{
-		ROMToFileOffsetMap[offset] = offset;
-	}
-#endif
-
 	C4RAM   = ROM + 0x400000 + 8192 * 8; // C4
 	OBC1RAM = ROM + 0x400000; // OBC1
 	BIOSROM = ROM + 0x300000; // BS
@@ -1632,6 +1624,14 @@ bool8 CMemory::LoadROMSNSF (const unsigned char *lrombuf, int32 lromsize, const 
 	ZeroMemory(ROM, MAX_ROM_SIZE);
 	ZeroMemory(&Multi, sizeof(Multi));
  
+#ifdef SNSFOPT
+	// setup the offset map for interleaved ROM
+	for (uint32 offset = 0; offset < MAX_ROM_SIZE; offset++)
+	{
+		ROMToFileOffsetMap[offset] = offset;
+	}
+#endif
+
 again:
 	Settings.DisplayColor = BUILD_PIXEL(31, 31, 31);
 	SET_UI_COLOR(255, 255, 255);

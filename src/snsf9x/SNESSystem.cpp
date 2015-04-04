@@ -152,6 +152,16 @@ uint8_t * GetROMPointer()
 	return Memory.ROM;
 }
 
+uint32_t SNESSystem::GetFileOffset(uint32_t mem_offset) const
+{
+	return Memory.ROMToFileOffsetMap[mem_offset];
+}
+
+uint32_t SNESSystem::GetMemoryOffset(uint32_t file_offset) const
+{
+	return Memory.FileToROMOffsetMap[file_offset];
+}
+
 void SNESSystem::ReadROM(void * buffer, size_t size, uint32_t file_offset) const
 {
 	uint32_t buf_offset = 0;

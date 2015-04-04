@@ -29,6 +29,8 @@ public:
 	bool IsHiROM() const;
 
 	uint8_t * GetROMPointer();
+	uint32_t GetFileOffset(uint32_t mem_offset) const;
+	uint32_t GetMemoryOffset(uint32_t file_offset) const;
 	void ReadROM(void * buffer, size_t size, uint32_t file_offset) const;
 	void WriteROM(const void * buffer, size_t size, uint32_t file_offset);
 
