@@ -1275,6 +1275,18 @@ void CMemory::Deinit (void)
 	}
 
 #ifdef SNSFOPT
+	if (ROMToFileOffsetMap)
+	{
+		free(ROMToFileOffsetMap);
+		ROMToFileOffsetMap = NULL;
+	}
+
+	if (FileToROMOffsetMap)
+	{
+		free(FileToROMOffsetMap);
+		FileToROMOffsetMap = NULL;
+	}
+
 	if (ROMCoverage)
 	{
 		free(ROMCoverage);
