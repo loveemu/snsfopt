@@ -947,18 +947,6 @@ bool SnsfOpt::SaveROM(const std::string& filename, bool wipe_unused_data) const
 	return result;
 }
 
-bool SnsfOpt::SaveSNSF(const std::string& filename, bool wipe_unused_data) const
-{
-	std::map<std::string, std::string> tags;
-	return SaveSNSF(filename, snsf_base_offset, wipe_unused_data, tags);
-}
-
-bool SnsfOpt::SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data) const
-{
-	std::map<std::string, std::string> tags;
-	return SaveSNSF(filename, base_offset, wipe_unused_data, tags);
-}
-
 bool SnsfOpt::SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data, std::map<std::string, std::string>& tags) const
 {
 	uint32_t size = GetROMSize();
@@ -1101,6 +1089,8 @@ int main(int argc, char *argv[])
 	double oneshotPostgapLength = 1.0;
 	bool addSNSFTags = false;
 
+	char *psfby = NULL;
+
 	long l;
 	unsigned long ul;
 	char * endptr = NULL;
@@ -1217,6 +1207,17 @@ int main(int argc, char *argv[])
 			}
 
 			out_name = argv[argi + 1];
+			argi++;
+		}
+		else if (strcmp(argv[argi], "--psfby") == 0 || strcmp(argv[argi], "--snsfby") == 0)
+		{
+			if (argc <= (argi + 1))
+			{
+				fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
+				return 1;
+			}
+
+			psfby = argv[argi + 1];
 			argi++;
 		}
 		else if (strcmp(argv[argi], "--offset") == 0)
@@ -1422,7 +1423,12 @@ int main(int argc, char *argv[])
 				opt.Optimize();
 			}
 
-			opt.SaveSNSF(out_path, true);
+			std::map<std::string, std::string> tags;
+			if (psfby != NULL && strcmp(psfby, "") != 0) {
+				tags["snsfby"] = psfby;
+			}
+
+			opt.SaveSNSF(out_path, 0, true, tags);
 			break;
 		}
 
@@ -1469,7 +1475,12 @@ int main(int argc, char *argv[])
 				opt.Optimize();
 			}
 
-			opt.SaveSNSF(out_path, true);
+			std::map<std::string, std::string> tags;
+			if (psfby != NULL && strcmp(psfby, "") != 0) {
+				tags["snsfby"] = psfby;
+			}
+
+			opt.SaveSNSF(out_path, 0, true, tags);
 			break;
 		}
 
@@ -1520,7 +1531,13 @@ int main(int argc, char *argv[])
 					return 1;
 				}
 				opt.Optimize();
-				opt.SaveSNSF(out_path, true);
+
+				std::map<std::string, std::string> tags;
+				if (psfby != NULL && strcmp(psfby, "") != 0) {
+					tags["snsfby"] = psfby;
+				}
+
+				opt.SaveSNSF(out_path, 0, true, tags);
 			}
 			break;
 		}
