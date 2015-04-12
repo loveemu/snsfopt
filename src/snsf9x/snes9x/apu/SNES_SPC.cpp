@@ -412,8 +412,12 @@ int const bits_in_int = CHAR_BIT * sizeof (int);
 
 void SNES_SPC::cpu_write( int data, int addr, rel_time_t time )
 {
-	MEM_ACCESS( time, addr )
-	
+	MEM_ACCESS(time, addr)
+
+#ifdef SNSFOPT
+	mark_as_written(addr);
+#endif
+
 	// RAM
 	RAM [addr] = (uint8_t) data;
 	int reg = addr - 0xF0;
@@ -566,15 +570,27 @@ void SNES_SPC::end_frame( time_t end_time )
 #ifdef SNSFOPT
 void SNES_SPC::mark_as_read(uint16_t address)
 {
-	if (m.ram_coverage[address] < 0xff)
+	// mark only constant data
+	if (m.ram_write_coverage[address] == 1)
 	{
-		if (m.ram_coverage[address] == 0)
+		if (m.ram_coverage[address] < 0xff)
 		{
-			m.ram_coverage_size++;
-		}
+			if (m.ram_coverage[address] == 0)
+			{
+				m.ram_coverage_size++;
+			}
 
-		m.ram_coverage[address]++;
-		m.ram_coverage_histogram[m.ram_coverage[address]]++;
+			m.ram_coverage[address]++;
+			m.ram_coverage_histogram[m.ram_coverage[address]]++;
+		}
+	}
+}
+
+void SNES_SPC::mark_as_written(uint16_t address)
+{
+	if (m.ram_write_coverage[address] < 0xff)
+	{
+		m.ram_write_coverage[address]++;
 	}
 }
 #endif

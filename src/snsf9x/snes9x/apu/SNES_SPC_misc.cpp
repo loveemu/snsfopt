@@ -199,6 +199,7 @@ void SNES_SPC::reset_common( int timer_counter_init )
 void SNES_SPC::reset_coverage()
 {
 	memset(m.ram_coverage, 0, 0x10000);
+	memset(m.ram_write_coverage, 0, 0x10000);
 	memset(m.ram_coverage_histogram, 0x00, sizeof(uint32_t) * 256);
 	m.ram_coverage_size = 0;
 }

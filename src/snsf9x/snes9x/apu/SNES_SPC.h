@@ -121,6 +121,7 @@ public:
 	typedef BOOST::uint32_t uint32_t;
 
 	void mark_as_read(uint16_t address);
+	void mark_as_written(uint16_t address);
 #endif
 
 	// Time relative to m_spc_time. Speeds up code a bit by eliminating need to
@@ -207,6 +208,7 @@ private:
 
 #ifdef SNSFOPT
 		uint8_t ram_coverage[0x10000];
+		uint8_t ram_write_coverage[0x10000];
 		uint32_t ram_coverage_size;
 		uint32_t ram_coverage_histogram[256];
 #endif

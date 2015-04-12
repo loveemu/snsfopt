@@ -668,6 +668,38 @@ void SnsfOpt::Optimize(void)
 			finished = true;
 		}
 
+#ifdef _DEBUG
+#if 0
+		// trace coverage
+		static double last_dump_time = 0.0;
+		if (fabs(last_dump_time - m_output.get_timer()) > 0.5)
+		{
+			char *sep;
+			//printf("CPU dump %s\n", ToTimeString(m_output.get_timer()).c_str());
+			char cpu_cov_fn[PATH_MAX];
+			sprintf(cpu_cov_fn, "cpu-%s.cov", ToTimeString(m_output.get_timer()).c_str());
+			while ((sep = strchr(cpu_cov_fn, ':')) != NULL) {
+				*sep = '.';
+			}
+			FILE * cpu_cov_fp = fopen(cpu_cov_fn, "wb");
+			fwrite(m_system->GetROMCoverage(), 1, MAX_SNES_ROM_SIZE, cpu_cov_fp);
+			fclose(cpu_cov_fp);
+
+			//printf("APU dump %s\n", ToTimeString(m_output.get_timer()).c_str());
+			char apu_cov_fn[PATH_MAX];
+			sprintf(apu_cov_fn, "apu-%s.cov", ToTimeString(m_output.get_timer()).c_str());
+			while ((sep = strchr(apu_cov_fn, ':')) != NULL) {
+				*sep = '.';
+			}
+			FILE * apu_cov_fp = fopen(apu_cov_fn, "wb");
+			fwrite(m_system->GetAPURAMCoverage(), 1, SNES_APU_RAM_SIZE, apu_cov_fp);
+			fclose(apu_cov_fp);
+
+			last_dump_time = m_output.get_timer();
+		}
+#endif
+#endif
+
 		// show progress
 		double time_current = timer_get();
 		if (time_current >= time_last_prog + optimize_progress_frequency)
