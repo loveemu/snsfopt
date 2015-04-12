@@ -767,7 +767,14 @@ void SnsfOpt::DetectLoop()
 		}
 	}
 
+	// update invalid loop points
+	for (int count = loop_count_unique + 1; count < 256; count++)
+	{
+		loop_point[count] = m_output.get_timer();
+	}
+
 	// verify the loop
+	loop_count = 0;
 	for (int count = loop_count_unique; count > 0; count--)
 	{
 		if (m_output.get_timer() - loop_point[count] >= loop_verify_length)
