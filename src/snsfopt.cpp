@@ -33,7 +33,7 @@
 #endif
 
 #define APP_NAME    "snsfopt"
-#define APP_VER     "[2015-04-04]"
+#define APP_VER     "[2015-04-12]"
 #define APP_URL     "http://github.com/loveemu/snsfopt"
 
 #define SNSF_PSF_VERSION		0x23
@@ -634,6 +634,7 @@ void SnsfOpt::Optimize(void)
 	loop_count = 0;
 	oneshot_endpoint = 0.0;
 	oneshot = false;
+	initial_silence_length = 0.0;
 
 	double time_last_prog = 0.0;
 	bool finished = false;
@@ -642,6 +643,8 @@ void SnsfOpt::Optimize(void)
 	{
 		rom_bytes_used_old = m_system->GetROMCoverageSize();
 		m_system->CPULoop();
+
+		initial_silence_length = m_output.get_initial_silence_length();
 
 		// any updates?
 		if (m_system->GetROMCoverageSize() != rom_bytes_used_old)
@@ -808,14 +811,18 @@ void SnsfOpt::ShowOptimizeProgress() const
 void SnsfOpt::ShowOptimizeResult() const
 {
 	printf("%s: ", rom_filename.c_str());
-	printf("Time = %s", ToTimeString(song_endpoint).c_str());
 
 	if (!time_loop_based)
 	{
+		printf("Time = %s", ToTimeString(song_endpoint).c_str());
 		printf(", %d bytes", m_system->GetROMCoverageSize());
 	}
 	else
 	{
+		printf("Time = %s, Silence = %s",
+			ToTimeString(song_endpoint - initial_silence_length).c_str(),
+			ToTimeString(initial_silence_length).c_str());
+
 		if (oneshot)
 		{
 			printf(" (One Shot)");
@@ -1628,12 +1635,12 @@ int main(int argc, char *argv[])
 
 					if (opt.IsOneShot())
 					{
-						snsf->tags["length"] = SnsfOpt::ToTimeString(opt.GetOneShotEndPoint() + oneshotPostgapLength, false);
+						snsf->tags["length"] = SnsfOpt::ToTimeString(opt.GetOneShotEndPoint() + oneshotPostgapLength - opt.GetInitialSilenceLength(), false);
 						snsf->tags.erase("fade");
 					}
 					else
 					{
-						snsf->tags["length"] = SnsfOpt::ToTimeString(opt.GetLoopPoint(), false);
+						snsf->tags["length"] = SnsfOpt::ToTimeString(opt.GetLoopPoint() - opt.GetInitialSilenceLength(), false);
 
 						if (loopFadeLength >= 0.001)
 						{
@@ -1645,7 +1652,11 @@ int main(int argc, char *argv[])
 						}
 					}
 
-					snsf->save(out_path);
+					if (!snsf->save(out_path)) {
+						fprintf(stderr, "Error: Unable to save PSF file %s\n", argv[argi]);
+						return 1;
+					}
+
 					delete snsf;
 				}
 			}
