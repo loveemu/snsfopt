@@ -239,7 +239,11 @@ private:
 	void regs_loaded();
 	void reset_time_regs();
 	void reset_common( int timer_counter_init );
-	
+
+#ifdef SNSFOPT
+	void reset_coverage();
+#endif
+
 	Timer* run_timer_      ( Timer* t, rel_time_t );
 	Timer* run_timer       ( Timer* t, rel_time_t );
 	int dsp_read           ( rel_time_t );

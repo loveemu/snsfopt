@@ -195,6 +195,15 @@ void SNES_SPC::reset_common( int timer_counter_init )
 	reset_time_regs();
 }
 
+#ifdef SNSFOPT
+void SNES_SPC::reset_coverage()
+{
+	memset(m.ram_coverage, 0, 0x10000);
+	memset(m.ram_coverage_histogram, 0x00, sizeof(uint32_t) * 256);
+	m.ram_coverage_size = 0;
+}
+#endif
+
 void SNES_SPC::soft_reset()
 {
 	reset_common( 0 );
@@ -213,6 +222,10 @@ void SNES_SPC::reset()
 	ram_loaded();
 	reset_common( 0x0F );
 	dsp.reset();
+
+#ifdef SNSFOPT
+	reset_coverage();
+#endif
 }
 
 char const SNES_SPC::signature [signature_size + 1] =
