@@ -55,22 +55,22 @@ public:
 		time_loop_based = sw;
 	}
 
-	inline double GetLoopPoint(void)
+	inline double GetLoopPoint(void) const
 	{
 		return GetLoopPoint(target_loop_count);
 	}
 
-	inline double GetLoopPoint(uint8_t count)
+	inline double GetLoopPoint(uint8_t count) const
 	{
 		return loop_point[count];
 	}
 
-	inline std::string GetLoopPointString(void)
+	inline std::string GetLoopPointString(void) const
 	{
 		return GetLoopPointString(target_loop_count);
 	}
 
-	inline std::string GetLoopPointString(uint8_t count)
+	inline std::string GetLoopPointString(uint8_t count) const
 	{
 		return ToTimeString(GetLoopPoint(count));
 	}
