@@ -547,6 +547,10 @@ void SNES_SPC::end_frame( time_t end_time )
 	m.spc_time     -= end_time;
 	m.extra_clocks += end_time;
 	
+#ifdef SNSFOPT
+	m.total_clocks += end_time;
+#endif
+
 	// Greatest number of clocks early that emulation can stop early due to
 	// not being able to execute current instruction without going over
 	// allowed time.
@@ -575,13 +579,24 @@ void SNES_SPC::mark_as_read(uint16_t address)
 	{
 		if (m.ram_coverage[address] < 0xff)
 		{
+			bool update_coverage = false;
 			if (m.ram_coverage[address] == 0)
 			{
+				update_coverage = true;
 				m.ram_coverage_size++;
 			}
+			else if (m.total_clocks - m.ram_coverage_timestamp[address] > 512000) // 0.5s
+			{
+				// ignore updates in short period
+				update_coverage = true;
+			}
 
-			m.ram_coverage[address]++;
-			m.ram_coverage_histogram[m.ram_coverage[address]]++;
+			if (update_coverage)
+			{
+				m.ram_coverage[address]++;
+				m.ram_coverage_histogram[m.ram_coverage[address]]++;
+				m.ram_coverage_timestamp[address] = m.total_clocks;
+			}
 		}
 	}
 }

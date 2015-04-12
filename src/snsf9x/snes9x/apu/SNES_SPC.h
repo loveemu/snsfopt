@@ -182,7 +182,11 @@ private:
 		int         skipped_kon;
 		int         skipped_koff;
 		const char* cpu_error;
-		
+
+#ifdef SNSFOPT
+		int         total_clocks;
+#endif
+
 		int         extra_clocks;
 		sample_t*   buf_begin;
 		sample_t const* buf_end;
@@ -208,6 +212,7 @@ private:
 
 #ifdef SNSFOPT
 		uint8_t ram_coverage[0x10000];
+		int ram_coverage_timestamp[0x10000];
 		uint8_t ram_write_coverage[0x10000];
 		uint32_t ram_coverage_size;
 		uint32_t ram_coverage_histogram[256];
