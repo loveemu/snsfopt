@@ -676,6 +676,8 @@ void SnsfOpt::Optimize(void)
 		}
 	} while(!finished);
 
+	initial_silence_length = std::min(initial_silence_length, song_endpoint);
+
 	timer_uninit();
 
 	ShowOptimizeResult();
