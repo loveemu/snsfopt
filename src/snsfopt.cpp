@@ -1636,7 +1636,7 @@ int main(int argc, char *argv[])
 					if (opt.IsOneShot())
 					{
 						snsf->tags["length"] = SnsfOpt::ToTimeString(opt.GetOneShotEndPoint() + oneshotPostgapLength - opt.GetInitialSilenceLength(), false);
-						snsf->tags.erase("fade");
+						snsf->tags["fade"] = "0";
 					}
 					else
 					{
@@ -1648,7 +1648,7 @@ int main(int argc, char *argv[])
 						}
 						else
 						{
-							snsf->tags.erase("fade");
+							snsf->tags["fade"] = "0";
 						}
 					}
 
