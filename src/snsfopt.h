@@ -252,6 +252,7 @@ protected:
 	double oneshot_verify_length;
 
 	double time_last_new_data;
+	double loop_point_raw[256];
 	double loop_point[256];
 	bool loop_point_updated[256];
 	uint8_t loop_count;

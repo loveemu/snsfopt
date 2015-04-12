@@ -629,6 +629,7 @@ void SnsfOpt::Optimize(void)
 	for (int i = 0; i < 256; i++)
 	{
 		loop_point[i] = 0.0;
+		loop_point_raw[i] = 0.0;
 		loop_point_updated[i] = false;
 	}
 	loop_count = 0;
@@ -713,27 +714,29 @@ void SnsfOpt::DetectLoop()
 		}
 	}
 
-	for (int count = 1; count < 256; count++)
-	{
-		if (rom_refs_histogram[count] != (m_system->GetROMCoverageHistogram())[count])
-		{
-			loop_count_expected_upper = count - 1;
-			break;
-		}
-	}
-
 	// update loop point of new loops
 	for (int count = loop_count_expected_upper; count > 0; count--)
 	{
 		if (loop_point_updated[count])
 		{
-			loop_point[count] = m_output.get_timer();
+			loop_point_raw[count] = m_output.get_timer();
 			loop_point_updated[count] = false;
 		}
 	}
 
+	// make each loop points unique
+	int loop_count_unique = 1;
+	loop_point[1] = loop_point_raw[1];
+	for (int count = 2; count <= loop_count_expected_upper; count++)
+	{
+		if (loop_point_raw[count] != loop_point_raw[count - 1]) {
+			loop_count_unique++;
+			loop_point[loop_count_unique] = loop_point_raw[count];
+		}
+	}
+
 	// verify the loop
-	for (int count = loop_count_expected_upper; count > 0; count--)
+	for (int count = loop_count_unique; count > 0; count--)
 	{
 		if (m_output.get_timer() - loop_point[count] >= loop_verify_length)
 		{
@@ -745,7 +748,7 @@ void SnsfOpt::DetectLoop()
 	// update invalid loop points
 	for (int count = loop_count_expected_upper + 1; count < 256; count++)
 	{
-		loop_point[count] = m_output.get_timer();
+		loop_point_raw[count] = m_output.get_timer();
 		loop_point_updated[count] = true;
 	}
 
