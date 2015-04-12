@@ -60,6 +60,7 @@ void S9xMessage(int type, int message_no, const char *str)
 {
 #ifdef WIN32
 	OutputDebugStringA(str);
+	OutputDebugStringA("\n");
 #endif
 }
 
