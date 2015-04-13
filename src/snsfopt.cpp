@@ -735,12 +735,6 @@ void SnsfOpt::DetectLoop()
 		}
 	}
 
-	// update invalid loop points
-	for (int count = loop_count_unique + 1; count < 256; count++)
-	{
-		loop_point[count] = m_output.get_timer();
-	}
-
 	// verify the loop
 	loop_count = 0;
 	for (int count = loop_count_unique; count > 0; count--)
@@ -749,6 +743,22 @@ void SnsfOpt::DetectLoop()
 		{
 			loop_count = count;
 			break;
+		}
+	}
+
+	if (loop_count_expected_upper == 255 && loop_count == loop_count_unique) {
+		// completely stopped?
+		for (int count = loop_count_unique + 1; count < 256; count++)
+		{
+			loop_point[count] = loop_point[loop_count_unique];
+		}
+		loop_count_unique = 255;
+	}
+	else {
+		// update invalid loop points
+		for (int count = loop_count_unique + 1; count < 256; count++)
+		{
+			loop_point[count] = m_output.get_timer();
 		}
 	}
 
