@@ -159,8 +159,8 @@ protected:
 
 		snsf_sound_out() :
 			sample_rate(32000),
-			silence_threshold(0),
-			initial_silence_samples(8),
+			silence_threshold(8),
+			initial_silence_samples(0),
 			initial_silence_captured(false)
 		{
 			reset_timer();
@@ -188,7 +188,12 @@ protected:
 
 					if (!initial_silence_captured)
 					{
-						initial_silence_samples = silent_samples_received;
+						if (samp == 0) {
+							initial_silence_samples = silent_samples_received;
+						}
+						else {
+							initial_silence_captured = true;
+						}
 					}
 				}
 				else
