@@ -181,6 +181,10 @@
 #include "snes9x.h"
 #include "SNES_SPC.h"
 
+#ifdef SNSFOPT
+#include "../../SPCFile.h"
+#endif
+
 typedef void (*apu_callback) (void *);
 
 #define SPC_SAVE_STATE_BLOCK_SIZE	(SNES_SPC::state_size + 8)
@@ -198,6 +202,9 @@ void S9xAPUTimingSetSpeedup (int);
 void S9xAPULoadState (uint8 *);
 void S9xAPUSaveState (uint8 *);
 void S9xDumpSPCSnapshot (void);
+#ifdef SNSFOPT
+SPCFile * S9xSPCDump (void);
+#endif
 
 bool8 S9xInitSound (int, int);
 bool8 S9xOpenSoundDevice (void);

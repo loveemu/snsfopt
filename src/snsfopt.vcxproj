@@ -189,6 +189,7 @@
     <ClCompile Include="snsf9x\SNESSystem.cpp" />
     <ClCompile Include="snsfopt.cpp" />
     <ClCompile Include="PSFFile.cpp" />
+    <ClCompile Include="SPCFile.cpp" />
     <ClCompile Include="ZlibReader.cpp" />
     <ClCompile Include="ZlibWriter.cpp" />
   </ItemGroup>
@@ -224,6 +225,7 @@
     <ClInclude Include="snsf9x\SNESSystem.h" />
     <ClInclude Include="snsfopt.h" />
     <ClInclude Include="PSFFile.h" />
+    <ClInclude Include="SPCFile.h" />
     <ClInclude Include="ZlibReader.h" />
     <ClInclude Include="ZlibWriter.h" />
   </ItemGroup>

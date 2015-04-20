@@ -90,6 +90,9 @@
     <ClCompile Include="snsf9x\SNESSystem.cpp">
       <Filter>Source Files\snsf9x</Filter>
     </ClCompile>
+    <ClCompile Include="SPCFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cpath.h">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="snsf9x\SNESSystem.h">
       <Filter>Header Files\snsf9x</Filter>
+    </ClInclude>
+    <ClInclude Include="SPCFile.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

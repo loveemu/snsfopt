@@ -185,6 +185,13 @@
 #include "linear_resampler.h"
 #include "hermite_resampler.h"
 
+#ifdef SNSFOPT
+#include "../SNESSystem.h"
+#include "../../SPCFile.h"
+
+SNESSystem * spc_snessystem = NULL;
+#endif
+
 #define APU_DEFAULT_INPUT_RATE		32000
 #define APU_MINIMUM_SAMPLE_COUNT	512
 #define APU_MINIMUM_SAMPLE_BLOCK	128
@@ -489,6 +496,10 @@ void S9xDumpSPCSnapshot (void)
 #ifdef SNSF9X_REMOVED
 	spc_core->dsp_dump_spc_snapshot();
 #endif
+
+#ifdef SNSFOPT
+	spc_core->dsp_dump_spc_snapshot();
+#endif
 }
 
 static void SPCSnapshotCallback (void)
@@ -496,6 +507,13 @@ static void SPCSnapshotCallback (void)
 #ifdef SNSF9X_REMOVED
 	S9xSPCDump(S9xGetFilenameInc((".spc"), SPC_DIR));
 	printf("Dumped key-on triggered spc snapshot.\n");
+#endif
+
+#ifdef SNSFOPT
+	if (spc_snessystem != NULL) {
+		SPCFile * spc_file = S9xSPCDump();
+		spc_snessystem->SPCSnapshotCallback(spc_file);
+	}
 #endif
 }
 
@@ -660,3 +678,21 @@ void S9xAPULoadState (uint8 *block)
 	ptr += sizeof(int32);
 	spc::remainder = GET_LE32(ptr);
 }
+
+#ifdef SNSFOPT
+
+SPCFile * S9xSPCDump (void)
+{
+	const size_t SPC_FILE_SIZE = 0x10200;
+
+	uint8_t spc_data[SPC_FILE_SIZE];
+	memset(spc_data, 0, SPC_FILE_SIZE);
+
+	spc_core->init_header(&spc_data);
+	spc_core->save_spc(&spc_data);
+
+	SPCFile * spc_file = SPCFile::Load(spc_data, SPC_FILE_SIZE);
+	return spc_file;
+}
+
+#endif

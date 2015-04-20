@@ -13,7 +13,7 @@ Downloads
 Usage
 -----
 
-Syntax: `snsfopt [options] [-s or -l or -f or -t] [snsf files]`
+Syntax: `snsfopt [options] [-s or -l or -f or -r or -x or -t] [snsf files]`
 
 ### Options
 
@@ -40,6 +40,9 @@ Syntax: `snsfopt [options] [-s or -l or -f or -t] [snsf files]`
 
 `-r [snsf files]`
   : Convert to Rom files, no optimization
+
+`-x [snsf files]`
+  : Convert to SPC files
 
 `-s [snsflib] [Hex offset] [Count]`
   : Optimize snsflib using a known offset/count

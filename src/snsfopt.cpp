@@ -33,7 +33,7 @@
 #endif
 
 #define APP_NAME    "snsfopt"
-#define APP_VER     "[2015-04-13]"
+#define APP_VER     "[2015-04-21]"
 #define APP_URL     "http://github.com/loveemu/snsfopt"
 
 #define SNSF_PSF_VERSION		0x23
@@ -618,10 +618,56 @@ void SnsfOpt::ResetOptimizer(void)
 	apuram_bytes_used = 0;
 }
 
-void SnsfOpt::Optimize(void)
+void SnsfOpt::Run(void (SnsfOpt::*Start)(), void (SnsfOpt::*BeforeLoop)(), void (SnsfOpt::*AfterLoop)(), bool (SnsfOpt::*Finished)(), void (SnsfOpt::*End)(), void (SnsfOpt::*ShowProgress)() const, void (SnsfOpt::*ShowResult)() const)
 {
 	timer_init();
 
+	(this->*Start)();
+
+	double time_last_prog = 0.0;
+	bool finished = false;
+
+	do
+	{
+		(this->*BeforeLoop)();
+
+		m_system->CPULoop();
+
+		(this->*AfterLoop)();
+
+		// is optimization (or loop detection) finished?
+		finished = (this->*Finished)();
+
+		// show progress
+		double time_current = timer_get();
+		if (time_current >= time_last_prog + optimize_progress_frequency)
+		{
+			(this->*ShowProgress)();
+			time_last_prog = time_current;
+		}
+	} while(!finished);
+
+	(this->*End)();
+	(this->*ShowResult)();
+
+	timer_uninit();
+}
+
+void SnsfOpt::Optimize(void)
+{
+	Run(&SnsfOpt::Optimize_Start, &SnsfOpt::Optimize_BeforeLoop, &SnsfOpt::Optimize_AfterLoop, &SnsfOpt::Optimize_Finished, &SnsfOpt::Optimize_End, &SnsfOpt::Optimize_ShowProgress, &SnsfOpt::Optimize_ShowResult);
+}
+
+void SnsfOpt::DumpSPC(const std::string & filename)
+{
+	ResetOptimizer();
+	m_system->DumpSPCSnapshot(filename);
+
+	Run(&SnsfOpt::SPCDump_Start, &SnsfOpt::SPCDump_BeforeLoop, &SnsfOpt::SPCDump_AfterLoop, &SnsfOpt::SPCDump_Finished, &SnsfOpt::SPCDump_End, &SnsfOpt::SPCDump_ShowProgress, &SnsfOpt::SPCDump_ShowResult);
+}
+
+void SnsfOpt::Optimize_Start(void)
+{
 	rom_bytes_used_old = m_system->GetROMCoverageSize();
 	apuram_bytes_used_old = m_system->GetAPURAMCoverageSize();
 	time_last_new_data = m_output.get_timer();
@@ -636,52 +682,159 @@ void SnsfOpt::Optimize(void)
 	oneshot_endpoint = 0.0;
 	oneshot = false;
 	initial_silence_length = 0.0;
+}
 
-	double time_last_prog = 0.0;
-	bool finished = false;
+void SnsfOpt::Optimize_BeforeLoop(void)
+{
+	rom_bytes_used_old = m_system->GetROMCoverageSize();
+}
 
-	do
+void SnsfOpt::Optimize_AfterLoop(void)
+{
+	initial_silence_length = m_output.get_initial_silence_length();
+
+	// any updates?
+	if (m_system->GetROMCoverageSize() != rom_bytes_used_old)
 	{
-		rom_bytes_used_old = m_system->GetROMCoverageSize();
-		m_system->CPULoop();
+		time_last_new_data = m_output.get_timer();
+	}
 
-		initial_silence_length = m_output.get_initial_silence_length();
+	// loop detection
+	DetectLoop();
 
-		// any updates?
-		if (m_system->GetROMCoverageSize() != rom_bytes_used_old)
-		{
-			time_last_new_data = m_output.get_timer();
-		}
+	// oneshot detection
+	DetectOneShot();
 
-		// loop detection
-		DetectLoop();
+	// adjust endpoint
+	AdjustOptimizationEndPoint();
+}
 
-		// oneshot detection
-		DetectOneShot();
+bool SnsfOpt::Optimize_Finished(void)
+{
+	if (m_output.get_timer() >= optimize_endpoint) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
-		// adjust endpoint
-		AdjustOptimizationEndPoint();
-
-		// is optimization (or loop detection) finished?
-		if (m_output.get_timer() >= optimize_endpoint)
-		{
-			finished = true;
-		}
-
-		// show progress
-		double time_current = timer_get();
-		if (time_current >= time_last_prog + optimize_progress_frequency)
-		{
-			ShowOptimizeProgress();
-			time_last_prog = time_current;
-		}
-	} while(!finished);
-
+void SnsfOpt::Optimize_End(void)
+{
 	initial_silence_length = std::min(initial_silence_length, song_endpoint);
+}
 
-	timer_uninit();
+void SnsfOpt::Optimize_ShowProgress() const
+{
+	printf("%s: ", rom_filename.substr(0, 24).c_str());
+	printf("Time = %s", ToTimeString(song_endpoint).c_str());
 
-	ShowOptimizeResult();
+	printf(", Remaining = %s", ToTimeString(std::max(0.0, optimize_endpoint - m_output.get_timer())).c_str());
+	if (!time_loop_based)
+	{
+		printf(", %d bytes", m_system->GetROMCoverageSize());
+	}
+	else
+	{
+		printf(", Loop = %d", loop_count + 1);
+	}
+
+	fflush(stdout);
+
+	//       1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+}
+
+void SnsfOpt::Optimize_ShowResult() const
+{
+	printf("%s: ", rom_filename.c_str());
+
+	if (!time_loop_based)
+	{
+		printf("Time = %s", ToTimeString(song_endpoint).c_str());
+		printf(", %d bytes", m_system->GetROMCoverageSize());
+	}
+	else
+	{
+		printf("Time = %s, Silence = %s",
+			ToTimeString(song_endpoint - initial_silence_length).c_str(),
+			ToTimeString(initial_silence_length).c_str());
+
+		if (oneshot)
+		{
+			printf(" (One Shot)");
+		}
+		else
+		{
+			printf(" (%d Loops)", target_loop_count);
+		}
+	}
+
+	printf("                                            ");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\n");
+	fflush(stdout);
+}
+
+void SnsfOpt::SPCDump_Start()
+{
+	Optimize_Start();
+}
+
+void SnsfOpt::SPCDump_BeforeLoop()
+{
+	Optimize_BeforeLoop();
+}
+
+void SnsfOpt::SPCDump_AfterLoop()
+{
+	Optimize_AfterLoop();
+}
+
+void SnsfOpt::SPCDump_End()
+{
+	Optimize_End();
+}
+
+bool SnsfOpt::SPCDump_Finished(void)
+{
+	return m_system->HasSPCDumpFinished();
+}
+
+void SnsfOpt::SPCDump_ShowProgress() const
+{
+	printf("%s: ", rom_filename.substr(0, 24).c_str());
+	printf("Time = %s", ToTimeString(m_output.get_timer()).c_str());
+
+	fflush(stdout);
+
+	//       1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+}
+
+void SnsfOpt::SPCDump_ShowResult() const
+{
+	printf("%s: ", rom_filename.c_str());
+
+	if (m_system->HasSPCDumpSucceeded()) {
+		printf("Dumped key-on triggered spc snapshot");
+	}
+	else {
+		printf("Failed to make spc snapshot");
+	}
+
+	printf("                                            ");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	printf("\n");
+	fflush(stdout);
 }
 
 uint8_t SnsfOpt::ExpectPossibleLoopCount(const uint32_t * histogram, const uint32_t * new_histogram) const
@@ -805,62 +958,6 @@ void SnsfOpt::AdjustOptimizationEndPoint()
 		song_endpoint = time_last_new_data;
 		optimize_endpoint = time_last_new_data + optimize_timeout;
 	}
-}
-
-void SnsfOpt::ShowOptimizeProgress() const
-{
-	printf("%s: ", rom_filename.substr(0, 24).c_str());
-	printf("Time = %s", ToTimeString(song_endpoint).c_str());
-
-	printf(", Remaining = %s", ToTimeString(std::max(0.0, optimize_endpoint - m_output.get_timer())).c_str());
-	if (!time_loop_based)
-	{
-		printf(", %d bytes", m_system->GetROMCoverageSize());
-	}
-	else
-	{
-		printf(", Loop = %d", loop_count + 1);
-	}
-
-	fflush(stdout);
-
-	//       1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
-	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-}
-
-void SnsfOpt::ShowOptimizeResult() const
-{
-	printf("%s: ", rom_filename.c_str());
-
-	if (!time_loop_based)
-	{
-		printf("Time = %s", ToTimeString(song_endpoint).c_str());
-		printf(", %d bytes", m_system->GetROMCoverageSize());
-	}
-	else
-	{
-		printf("Time = %s, Silence = %s",
-			ToTimeString(song_endpoint - initial_silence_length).c_str(),
-			ToTimeString(initial_silence_length).c_str());
-
-		if (oneshot)
-		{
-			printf(" (One Shot)");
-		}
-		else
-		{
-			printf(" (%d Loops)", target_loop_count);
-		}
-	}
-
-	printf("                                            ");
-	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	printf("\n");
-	fflush(stdout);
 }
 
 void SnsfOpt::ResetOptimizerVariables()
@@ -1025,6 +1122,7 @@ enum SnsfOptProcMode
 	SNSFOPT_PROC_F,
 	SNSFOPT_PROC_L,
 	SNSFOPT_PROC_R,
+	SNSFOPT_PROC_X,
 	SNSFOPT_PROC_S,
 	SNSFOPT_PROC_T,
 };
@@ -1061,7 +1159,7 @@ static void usage(const char * progname, bool extended)
 		printf("  : Load offset of the base snsflib file.\n");
 		printf("    (The option works only if the input is SNES ROM file)\n");
 		printf("\n");
-		printf("#### File Processing Modes (-s) (-l) (-f) (-r) (-t)\n");
+		printf("#### File Processing Modes (-s) (-l) (-f) (-r) (-x) (-t)\n");
 		printf("\n");
 		printf("`-f [snsf files]`\n");
 		printf("  : Optimize single files, and in the process, convert\n");
@@ -1072,6 +1170,9 @@ static void usage(const char * progname, bool extended)
 		printf("\n");
 		printf("`-r [snsf files]`\n");
 		printf("  : Convert to Rom files, no optimization\n");
+		printf("\n");
+		printf("`-x [snsf files]`\n");
+		printf("  : Convert to SPC files\n");
 		printf("\n");
 		printf("`-s [snsflib] [Hex offset] [Count]`\n");
 		printf("  : Optimize snsflib using a known offset/count\n");
@@ -1157,6 +1258,17 @@ int main(int argc, char *argv[])
 		else if (strcmp(argv[argi], "-r") == 0)
 		{
 			mode = SNSFOPT_PROC_R;
+
+			if (argc <= (argi + 1))
+			{
+				fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
+				return 1;
+			}
+			argi++;
+		}
+		else if (strcmp(argv[argi], "-x") == 0)
+		{
+			mode = SNSFOPT_PROC_X;
 
 			if (argc <= (argi + 1))
 			{
@@ -1613,6 +1725,52 @@ int main(int argc, char *argv[])
 					return 1;
 				}
 				opt.SaveROM(out_path, false);
+			}
+			break;
+		}
+
+		case SNSFOPT_PROC_X:
+		{
+			if (argi + 1 < argc && !out_name.empty())
+			{
+				fprintf(stderr, "Error: Output filename cannot be specified to multiple ROMs.\n");
+				return 1;
+			}
+
+			for (int i = argi; i < argc; i++)
+			{
+				std::string out_path;
+				if (out_name.empty())
+				{
+					const char *ext = path_findext(argv[i]);
+					if (*ext == '\0')
+					{
+						out_path = argv[i];
+						out_path += ".spc";
+					}
+					else
+					{
+						out_path = std::string(argv[i], ext - argv[i]);
+						out_path += ".spc";
+					}
+				}
+				else
+				{
+					out_path = out_name;
+
+					const char *ext = path_findext(out_name.c_str());
+					if (*ext == '\0')
+					{
+						out_path += ".spc";
+					}
+				}
+
+				if (!opt.LoadROMFile(argv[i]))
+				{
+					fprintf(stderr, "Error: %s\n", opt.message().c_str());
+					return 1;
+				}
+				opt.DumpSPC(out_path);
 			}
 			break;
 		}

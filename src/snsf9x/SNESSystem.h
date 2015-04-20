@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "../SPCFile.h"
+
 // Callback class, passed the audio data from the emulator
 struct SNESSoundOut
 {
@@ -33,6 +35,10 @@ public:
 	uint32_t GetMemoryOffset(uint32_t file_offset) const;
 	void ReadROM(void * buffer, size_t size, uint32_t file_offset) const;
 	void WriteROM(const void * buffer, size_t size, uint32_t file_offset);
+	void DumpSPCSnapshot(const std::string & filename);
+	bool HasSPCDumpFinished(void) const;
+	bool HasSPCDumpSucceeded(void) const;
+	void SPCSnapshotCallback(SPCFile * spc_file);
 
 	const uint8_t * GetROMCoverage() const;
 	uint32_t GetROMCoverageSize() const;
@@ -49,4 +55,7 @@ protected:
 
 private:
 	uint8_t * sound_buffer;
+	bool spc_dump_requested;
+	bool spc_dump_succeeded;
+	std::string spc_dump_filename;
 };

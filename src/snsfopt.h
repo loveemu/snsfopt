@@ -24,7 +24,9 @@ public:
 	void ResetGame(void);
 
 	void ResetOptimizer(void);
-	void Optimize(void);
+	virtual void Optimize(void);
+	virtual void DumpSPC(const std::string & filename);
+	void Run(void (SnsfOpt::*Start)(), void (SnsfOpt::*BeforeLoop)(), void (SnsfOpt::*AfterLoop)(), bool (SnsfOpt::*Finished)(), void (SnsfOpt::*End)(), void (SnsfOpt::*ShowProgress)() const, void (SnsfOpt::*ShowResult)() const);
 
 	bool GetROM(void * rom, uint32_t size, bool wipe_unused_data) const;
 	bool SaveROM(const std::string& filename, bool wipe_unused_data) const;
@@ -271,12 +273,26 @@ protected:
 
 	static uint32_t MergeRefs(uint8_t * dst_refs, const uint8_t * src_refs, uint32_t size);
 
+	void Optimize_Start(void);
+	void Optimize_BeforeLoop(void);
+	void Optimize_AfterLoop(void);
+	bool Optimize_Finished(void);
+	void Optimize_End(void);
+	void Optimize_ShowProgress(void) const;
+	void Optimize_ShowResult(void) const;
+
+	void SPCDump_Start(void);
+	void SPCDump_BeforeLoop(void);
+	void SPCDump_AfterLoop(void);
+	bool SPCDump_Finished(void);
+	void SPCDump_End(void);
+	void SPCDump_ShowProgress(void) const;
+	void SPCDump_ShowResult(void) const;
+
 	virtual void DetectLoop(void);
 	virtual void DetectOneShot(void);
 	virtual void AdjustOptimizationEndPoint(void);
 	virtual void ResetOptimizerVariables(void);
-	virtual void ShowOptimizeProgress(void) const;
-	virtual void ShowOptimizeResult(void) const;
 
 	std::string m_message;
 
