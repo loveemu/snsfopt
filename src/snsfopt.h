@@ -28,6 +28,9 @@ public:
 	virtual void DumpSPC(const std::string & filename);
 	void Run(void (SnsfOpt::*Start)(), void (SnsfOpt::*BeforeLoop)(), void (SnsfOpt::*AfterLoop)(), bool (SnsfOpt::*Finished)(), void (SnsfOpt::*End)(), void (SnsfOpt::*ShowProgress)() const, void (SnsfOpt::*ShowResult)() const);
 
+	void SetSPCTags(const std::map<std::string, std::string> & tags);
+	void ClearSPCTags(void);
+
 	bool GetROM(void * rom, uint32_t size, bool wipe_unused_data) const;
 	bool SaveROM(const std::string& filename, bool wipe_unused_data) const;
 	bool SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data, std::map<std::string, std::string>& tags) const;

@@ -39,6 +39,9 @@ public:
 	bool HasSPCDumpFinished(void) const;
 	bool HasSPCDumpSucceeded(void) const;
 	void SPCSnapshotCallback(SPCFile * spc_file);
+	std::map<std::string, std::string> GetSPCTags(void) const;
+	void SetSPCTags(const std::map<std::string, std::string> & tags);
+	void ClearSPCTags(void);
 
 	const uint8_t * GetROMCoverage() const;
 	uint32_t GetROMCoverageSize() const;
@@ -52,6 +55,7 @@ public:
 
 protected:
 	SNESSoundOut * m_output;
+	std::map<std::string, std::string> spc_tags;
 
 private:
 	uint8_t * sound_buffer;

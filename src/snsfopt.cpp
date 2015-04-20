@@ -660,10 +660,19 @@ void SnsfOpt::Optimize(void)
 
 void SnsfOpt::DumpSPC(const std::string & filename)
 {
-	ResetOptimizer();
 	m_system->DumpSPCSnapshot(filename);
 
 	Run(&SnsfOpt::SPCDump_Start, &SnsfOpt::SPCDump_BeforeLoop, &SnsfOpt::SPCDump_AfterLoop, &SnsfOpt::SPCDump_Finished, &SnsfOpt::SPCDump_End, &SnsfOpt::SPCDump_ShowProgress, &SnsfOpt::SPCDump_ShowResult);
+}
+
+void SnsfOpt::SetSPCTags(const std::map<std::string, std::string> & tags)
+{
+	m_system->SetSPCTags(tags);
+}
+
+void SnsfOpt::ClearSPCTags(void)
+{
+	m_system->ClearSPCTags();
 }
 
 void SnsfOpt::Optimize_Start(void)
@@ -1765,11 +1774,22 @@ int main(int argc, char *argv[])
 					}
 				}
 
+				opt.ResetOptimizer();
 				if (!opt.LoadROMFile(argv[i]))
 				{
 					fprintf(stderr, "Error: %s\n", opt.message().c_str());
 					return 1;
 				}
+
+				opt.ClearSPCTags();
+				if (PSFFile::IsPSFFile(argv[i])) {
+					PSFFile * psf_file = PSFFile::load(argv[i]);
+					if (psf_file != NULL) {
+						opt.SetSPCTags(psf_file->tags);
+						delete psf_file;
+					}
+				}
+
 				opt.DumpSPC(out_path);
 			}
 			break;

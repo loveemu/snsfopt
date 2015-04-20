@@ -9,6 +9,7 @@
 #include "snes9x/memmap.h"
 #include "snes9x/apu/apu.h"
 
+#include "../SPCFile.h"
 #include "SNESSystem.h"
 
 extern SNESSystem * spc_snessystem; // apu.cpp
@@ -220,6 +221,10 @@ void SNESSystem::SPCSnapshotCallback(SPCFile * spc_file)
 		return;
 	}
 
+	// remove emulator name if provided
+	spc_file->tags.erase(SPCFile::XID6ItemId::XID6_DUMPER_NAME);
+	spc_file->ImportPSFTag(spc_tags);
+
 	if (!spc_file->Save(spc_dump_filename)) {
 		delete spc_file;
 
@@ -232,6 +237,21 @@ void SNESSystem::SPCSnapshotCallback(SPCFile * spc_file)
 	spc_dump_succeeded = true;
 	spc_dump_requested = false;
 	return;
+}
+
+std::map<std::string, std::string> SNESSystem::GetSPCTags(void) const
+{
+	return spc_tags;
+}
+
+void SNESSystem::SetSPCTags(const std::map<std::string, std::string> & tags)
+{
+	spc_tags = tags;
+}
+
+void SNESSystem::ClearSPCTags(void)
+{
+	spc_tags.clear();
 }
 
 const uint8_t * SNESSystem::GetROMCoverage() const
