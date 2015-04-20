@@ -1121,6 +1121,9 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 				}
 			}
 		}
+		else if (name.substr(0, 1) == "_") {
+			// Do not process psflib special tags
+		}
 		else {
 			fprintf(stderr, "Warning: \"%s\" tag is ignored\n", name.c_str());
 		}
