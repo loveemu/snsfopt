@@ -802,7 +802,7 @@ void SnsfOpt::SPCDump_End()
 
 bool SnsfOpt::SPCDump_Finished(void)
 {
-	return m_system->HasSPCDumpFinished();
+	return m_system->HasSPCDumpFinished() || m_output.get_timer() >= optimize_timeout;
 }
 
 void SnsfOpt::SPCDump_ShowProgress() const
@@ -822,7 +822,7 @@ void SnsfOpt::SPCDump_ShowResult() const
 {
 	printf("%s: ", rom_filename.c_str());
 
-	if (m_system->HasSPCDumpSucceeded()) {
+	if (m_system->HasSPCDumpFinished() && m_system->HasSPCDumpSucceeded()) {
 		printf("Dumped key-on triggered spc snapshot");
 	}
 	else {
