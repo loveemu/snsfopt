@@ -75,3 +75,7 @@ Syntax: `snsfopt [options] [-s or -l or -f or -r or -x or -t] [snsf files]`
   : Time in seconds for silence detection (default 15 seconds)
     Max (2*Verify loop count) seconds.
 
+##### Options for -x
+
+`-d`
+  : Delayed SPC capture, delay-time can be specified by `-T`

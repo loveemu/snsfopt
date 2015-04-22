@@ -213,6 +213,11 @@ SPCFile * SNESSystem::PopSPCDump(void)
 	}
 }
 
+SPCFile * SNESSystem::DumpSPCSnapshotImmediately(void) const
+{
+	return S9xSPCDump();
+}
+
 const uint8_t * SNESSystem::GetROMCoverage() const
 {
 	return Memory.ROMCoverage;

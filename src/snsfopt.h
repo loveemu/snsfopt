@@ -35,6 +35,8 @@ public:
 	bool SaveROM(const std::string& filename, bool wipe_unused_data) const;
 	bool SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data, std::map<std::string, std::string>& tags) const;
 
+	bool DelayedSPCDump;
+
 	inline uint32_t GetROMSize(void) const
 	{
 		return m_system->rom_size;

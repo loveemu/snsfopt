@@ -59,7 +59,8 @@ SnsfOpt::SnsfOpt() :
 	oneshot_verify_length(15),
 	paranoid_bytes(0),
 	snsf_base_offset(0),
-	spc_snapshot_dumped(NULL)
+	spc_snapshot_dumped(NULL),
+	DelayedSPCDump(false)
 {
 	m_system = new SNESSystem;
 	rom_refs = new uint8_t[SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE];
@@ -668,7 +669,9 @@ void SnsfOpt::DumpSPC(const std::string & filename)
 {
 	spc_dump_filename = filename;
 
-	m_system->DumpSPCSnapshot();
+	if (!DelayedSPCDump) {
+		m_system->DumpSPCSnapshot();
+	}
 
 	Run(&SnsfOpt::SPCDump_Start, &SnsfOpt::SPCDump_BeforeLoop, &SnsfOpt::SPCDump_AfterLoop, &SnsfOpt::SPCDump_Finished, &SnsfOpt::SPCDump_End, &SnsfOpt::SPCDump_ShowProgress, &SnsfOpt::SPCDump_ShowResult);
 }
@@ -819,21 +822,25 @@ void SnsfOpt::SPCDump_End()
 
 bool SnsfOpt::SPCDump_Finished(void)
 {
-	if (m_system->HasSPCDumpFinished()) {
+	if (!DelayedSPCDump && m_system->HasSPCDumpFinished()) {
 		SPCFile * spc_file = m_system->PopSPCDump();
 		if (spc_file != NULL) {
-			// remove emulator name if provided
-			spc_file->tags.erase(SPCFile::XID6ItemId::XID6_DUMPER_NAME);
-			spc_file->ImportPSFTag(spc_tags);
-
 			spc_snapshot_dumped = spc_file;
 		}
 
 		return true;
 	}
 
-	if (m_output.get_timer() >= optimize_timeout) {
-		return true;
+	if (DelayedSPCDump) {
+		if (m_output.get_timer() >= optimize_timeout) {
+			spc_snapshot_dumped = m_system->DumpSPCSnapshotImmediately();
+			return true;
+		}
+	}
+	else {
+		if (m_output.get_timer() >= optimize_timeout) {
+			return true;
+		}
 	}
 
 	return false;
@@ -843,6 +850,9 @@ void SnsfOpt::SPCDump_ShowProgress() const
 {
 	printf("%s: ", rom_filename.substr(0, 24).c_str());
 	printf("Time = %s", ToTimeString(m_output.get_timer()).c_str());
+	if (DelayedSPCDump) {
+		printf(", Remaining = %s", ToTimeString(std::max(0.0, optimize_endpoint - m_output.get_timer())).c_str());
+	}
 
 	fflush(stdout);
 
@@ -856,8 +866,25 @@ void SnsfOpt::SPCDump_ShowResult() const
 {
 	printf("%s: ", rom_filename.c_str());
 
-	if (spc_snapshot_dumped != NULL && spc_snapshot_dumped->Save(spc_dump_filename)) {
-		printf("Dumped key-on triggered spc snapshot");
+	bool spc_dump_succeeded = false;
+	if (spc_snapshot_dumped != NULL) {
+		// remove emulator name if provided
+		spc_snapshot_dumped->tags.erase(SPCFile::XID6ItemId::XID6_DUMPER_NAME);
+
+		// set tags
+		spc_snapshot_dumped->ImportPSFTag(spc_tags);
+
+		// write to disk
+		spc_dump_succeeded = spc_snapshot_dumped->Save(spc_dump_filename);
+	}
+
+	if (spc_dump_succeeded) {
+		if (DelayedSPCDump) {
+			printf("Dumped spc snapshot");
+		}
+		else {
+			printf("Dumped key-on triggered spc snapshot");
+		}
 	}
 	else {
 		printf("Failed to make spc snapshot");
@@ -1239,6 +1266,11 @@ static void usage(const char * progname, bool extended)
 		printf("  : Time in seconds for silence detection (default 15 seconds)\n");
 		printf("    Max (2*Verify loop count) seconds.\n");
 		printf("\n");
+		printf("#### Options for -x\n");
+		printf("\n");
+		printf("`-d`\n");
+		printf("  : Delayed SPC capture, delay-time can be specified by `-T`\n");
+		printf("\n");
 	}
 }
 
@@ -1420,7 +1452,27 @@ int main(int argc, char *argv[])
 
 		if (mode != SNSFOPT_PROC_NONE)
 		{
-			if (mode == SNSFOPT_PROC_T)
+			if (mode == SNSFOPT_PROC_X)
+			{
+				for (; argi < argc; argi++)
+				{
+					if (argv[argi][0] != '-')
+					{
+						break;
+					}
+
+					if (strcmp(argv[argi], "-d") == 0 || strcmp(argv[argi], "--delayed") == 0)
+					{
+						opt.DelayedSPCDump = true;
+					}
+					else
+					{
+						fprintf(stderr, "Error: Unknown option \"%s\"\n", argv[argi]);
+						return 1;
+					}
+				}
+			}
+			else if (mode == SNSFOPT_PROC_T)
 			{
 				for (; argi < argc; argi++)
 				{

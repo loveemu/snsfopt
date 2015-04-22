@@ -39,6 +39,7 @@ public:
 	bool HasSPCDumpFinished(void) const;
 	bool HasSPCDumpSucceeded(void) const;
 	SPCFile * PopSPCDump(void);
+	SPCFile * DumpSPCSnapshotImmediately(void) const;
 
 	const uint8_t * GetROMCoverage() const;
 	uint32_t GetROMCoverageSize() const;
