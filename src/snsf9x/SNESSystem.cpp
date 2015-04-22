@@ -12,8 +12,6 @@
 #include "../SPCFile.h"
 #include "SNESSystem.h"
 
-extern SNESSystem * spc_snessystem; // apu.cpp
-
 void WinSetDefaultValues ()
 {
 	// TODO: delete the parts that are already covered by the default values in WinRegisterConfigItems
@@ -74,9 +72,7 @@ bool8 S9xOpenSoundDevice(void)
 
 SNESSystem::SNESSystem() :
 	rom_size(0),
-	m_output(NULL),
-	spc_dump_requested(false),
-	spc_dump_succeeded(true)
+	m_output(NULL)
 {
 	sound_buffer = new uint8_t[2 * 2 * 48000 / 5];
 }
@@ -91,8 +87,6 @@ SNESSystem::~SNESSystem()
 bool SNESSystem::Load(const uint8_t * rom, uint32_t romsize, const uint8_t * sram, uint32_t sramsize)
 {
 	Term();
-
-	spc_snessystem = this;
 
 	InitSnes9X();
 
@@ -126,8 +120,6 @@ void SNESSystem::Reset()
 
 void SNESSystem::Term()
 {
-	spc_snessystem = NULL;
-
     Memory.Deinit();
     S9xDeinitAPU();
 }
@@ -194,64 +186,31 @@ void SNESSystem::WriteROM(const void * buffer, size_t size, uint32_t file_offset
 	}
 }
 
-void SNESSystem::DumpSPCSnapshot(const std::string & filename)
+void SNESSystem::DumpSPCSnapshot(void)
 {
-	spc_dump_filename = filename;
-	spc_dump_requested = true;
 	S9xDumpSPCSnapshot();
 }
 
 bool SNESSystem::HasSPCDumpFinished(void) const
 {
-	return !spc_dump_requested;
+	return (S9xTakingSPCSnapshot == FALSE) ? true : false;
 }
 
 bool SNESSystem::HasSPCDumpSucceeded(void) const
 {
-	return spc_dump_succeeded;
+	return (S9xLastSPCSnapshot != NULL) ? true : false;
 }
 
-void SNESSystem::SPCSnapshotCallback(SPCFile * spc_file)
+SPCFile * SNESSystem::PopSPCDump(void)
 {
-	spc_dump_succeeded = false;
-
-	if (spc_file == NULL) {
-		// spc dump attempt has been failed
-		spc_dump_requested = false;
-		return;
+	if (HasSPCDumpFinished() && HasSPCDumpSucceeded()) {
+		SPCFile * spc_file = S9xLastSPCSnapshot;
+		S9xLastSPCSnapshot = NULL;
+		return spc_file;
 	}
-
-	// remove emulator name if provided
-	spc_file->tags.erase(SPCFile::XID6ItemId::XID6_DUMPER_NAME);
-	spc_file->ImportPSFTag(spc_tags);
-
-	if (!spc_file->Save(spc_dump_filename)) {
-		delete spc_file;
-
-		spc_dump_requested = false;
-		return;
+	else {
+		return NULL;
 	}
-
-	delete spc_file;
-
-	spc_dump_succeeded = true;
-	spc_dump_requested = false;
-	return;
-}
-
-std::map<std::string, std::string> SNESSystem::GetSPCTags(void) const
-{
-	return spc_tags;
-}
-
-void SNESSystem::SetSPCTags(const std::map<std::string, std::string> & tags)
-{
-	spc_tags = tags;
-}
-
-void SNESSystem::ClearSPCTags(void)
-{
-	spc_tags.clear();
 }
 
 const uint8_t * SNESSystem::GetROMCoverage() const

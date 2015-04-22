@@ -270,6 +270,10 @@ protected:
 	bool oneshot;
 	double initial_silence_length;
 
+	std::string spc_dump_filename;
+	std::map<std::string, std::string> spc_tags;
+	SPCFile * spc_snapshot_dumped;
+
 	uint32_t paranoid_bytes;
 
 	bool ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size, uint8_t * sram_buf, uint32_t * ptr_sram_size, uint32_t * ptr_base_offset);

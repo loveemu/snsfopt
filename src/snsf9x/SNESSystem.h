@@ -35,13 +35,10 @@ public:
 	uint32_t GetMemoryOffset(uint32_t file_offset) const;
 	void ReadROM(void * buffer, size_t size, uint32_t file_offset) const;
 	void WriteROM(const void * buffer, size_t size, uint32_t file_offset);
-	void DumpSPCSnapshot(const std::string & filename);
+	void DumpSPCSnapshot(void);
 	bool HasSPCDumpFinished(void) const;
 	bool HasSPCDumpSucceeded(void) const;
-	void SPCSnapshotCallback(SPCFile * spc_file);
-	std::map<std::string, std::string> GetSPCTags(void) const;
-	void SetSPCTags(const std::map<std::string, std::string> & tags);
-	void ClearSPCTags(void);
+	SPCFile * PopSPCDump(void);
 
 	const uint8_t * GetROMCoverage() const;
 	uint32_t GetROMCoverageSize() const;
@@ -55,11 +52,7 @@ public:
 
 protected:
 	SNESSoundOut * m_output;
-	std::map<std::string, std::string> spc_tags;
 
 private:
 	uint8_t * sound_buffer;
-	bool spc_dump_requested;
-	bool spc_dump_succeeded;
-	std::string spc_dump_filename;
 };

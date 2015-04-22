@@ -33,7 +33,7 @@
 #endif
 
 #define APP_NAME    "snsfopt"
-#define APP_VER     "[2015-04-21]"
+#define APP_VER     "[2015-04-22]"
 #define APP_URL     "http://github.com/loveemu/snsfopt"
 
 #define SNSF_PSF_VERSION		0x23
@@ -58,7 +58,8 @@ SnsfOpt::SnsfOpt() :
 	loop_verify_length(20.0),
 	oneshot_verify_length(15),
 	paranoid_bytes(0),
-	snsf_base_offset(0)
+	snsf_base_offset(0),
+	spc_snapshot_dumped(NULL)
 {
 	m_system = new SNESSystem;
 	rom_refs = new uint8_t[SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE];
@@ -83,6 +84,11 @@ SnsfOpt::~SnsfOpt()
 	if (apuram_refs != NULL)
 	{
 		delete[] apuram_refs;
+	}
+
+	if (spc_snapshot_dumped != NULL)
+	{
+		delete spc_snapshot_dumped;
 	}
 }
 
@@ -660,19 +666,21 @@ void SnsfOpt::Optimize(void)
 
 void SnsfOpt::DumpSPC(const std::string & filename)
 {
-	m_system->DumpSPCSnapshot(filename);
+	spc_dump_filename = filename;
+
+	m_system->DumpSPCSnapshot();
 
 	Run(&SnsfOpt::SPCDump_Start, &SnsfOpt::SPCDump_BeforeLoop, &SnsfOpt::SPCDump_AfterLoop, &SnsfOpt::SPCDump_Finished, &SnsfOpt::SPCDump_End, &SnsfOpt::SPCDump_ShowProgress, &SnsfOpt::SPCDump_ShowResult);
 }
 
 void SnsfOpt::SetSPCTags(const std::map<std::string, std::string> & tags)
 {
-	m_system->SetSPCTags(tags);
+	spc_tags = tags;
 }
 
 void SnsfOpt::ClearSPCTags(void)
 {
-	m_system->ClearSPCTags();
+	spc_tags.clear();
 }
 
 void SnsfOpt::Optimize_Start(void)
@@ -811,7 +819,24 @@ void SnsfOpt::SPCDump_End()
 
 bool SnsfOpt::SPCDump_Finished(void)
 {
-	return m_system->HasSPCDumpFinished() || m_output.get_timer() >= optimize_timeout;
+	if (m_system->HasSPCDumpFinished()) {
+		SPCFile * spc_file = m_system->PopSPCDump();
+		if (spc_file != NULL) {
+			// remove emulator name if provided
+			spc_file->tags.erase(SPCFile::XID6ItemId::XID6_DUMPER_NAME);
+			spc_file->ImportPSFTag(spc_tags);
+
+			spc_snapshot_dumped = spc_file;
+		}
+
+		return true;
+	}
+
+	if (m_output.get_timer() >= optimize_timeout) {
+		return true;
+	}
+
+	return false;
 }
 
 void SnsfOpt::SPCDump_ShowProgress() const
@@ -831,7 +856,7 @@ void SnsfOpt::SPCDump_ShowResult() const
 {
 	printf("%s: ", rom_filename.c_str());
 
-	if (m_system->HasSPCDumpFinished() && m_system->HasSPCDumpSucceeded()) {
+	if (spc_snapshot_dumped != NULL && spc_snapshot_dumped->Save(spc_dump_filename)) {
 		printf("Dumped key-on triggered spc snapshot");
 	}
 	else {

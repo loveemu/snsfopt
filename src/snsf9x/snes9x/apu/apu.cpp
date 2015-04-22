@@ -189,7 +189,8 @@
 #include "../SNESSystem.h"
 #include "../../SPCFile.h"
 
-SNESSystem * spc_snessystem = NULL;
+SPCFile * S9xLastSPCSnapshot = NULL;
+bool8 S9xTakingSPCSnapshot = FALSE;
 #endif
 
 #define APU_DEFAULT_INPUT_RATE		32000
@@ -500,7 +501,10 @@ void S9xDumpSPCSnapshot (void)
 #endif
 
 #ifndef SNSFOPT_REMOVED
-	spc_core->dsp_dump_spc_snapshot();
+	if (S9xTakingSPCSnapshot == FALSE && S9xLastSPCSnapshot == NULL) {
+		S9xTakingSPCSnapshot = TRUE;
+		spc_core->dsp_dump_spc_snapshot();
+	}
 #endif
 }
 
@@ -512,10 +516,8 @@ static void SPCSnapshotCallback (void)
 #endif
 
 #ifndef SNSFOPT_REMOVED
-	if (spc_snessystem != NULL) {
-		SPCFile * spc_file = S9xSPCDump();
-		spc_snessystem->SPCSnapshotCallback(spc_file);
-	}
+	S9xLastSPCSnapshot = S9xSPCDump();
+	S9xTakingSPCSnapshot = FALSE;
 #endif
 }
 
@@ -562,6 +564,10 @@ void S9xDeinitAPU (void)
 		delete[] spc::shrink_buffer;
 		spc::shrink_buffer = NULL;
 	}
+
+#ifndef SNSFOPT_REMOVED
+	delete S9xLastSPCSnapshot;
+#endif
 }
 
 static inline int S9xAPUGetClock (int32 cpucycles)
