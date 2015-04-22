@@ -117,7 +117,7 @@ public:
 	
 	typedef BOOST::uint16_t uint16_t;
 	
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	typedef BOOST::uint32_t uint32_t;
 
 	void mark_as_read(uint16_t address);
@@ -144,7 +144,7 @@ public:
 	
 	enum { signature_size = 35 };
 	
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	const uint8_t * get_ram_coverage() const;
 	uint32_t get_ram_coverage_size() const;
 	const uint32_t * get_ram_coverage_histogram() const;
@@ -183,7 +183,7 @@ private:
 		int         skipped_koff;
 		const char* cpu_error;
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 		int         total_clocks;
 #endif
 
@@ -210,7 +210,7 @@ private:
 			uint8_t padding2 [0x100];
 		} ram;
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 		uint8_t ram_coverage[0x10000];
 		int ram_coverage_timestamp[0x10000];
 		uint8_t ram_write_coverage[0x10000];
@@ -247,7 +247,7 @@ private:
 	void reset_time_regs();
 	void reset_common( int timer_counter_init );
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	void reset_coverage();
 #endif
 
@@ -314,7 +314,7 @@ inline void SNES_SPC::disable_surround( bool disable ) { dsp.disable_surround( d
 inline bool SNES_SPC::check_kon() { return dsp.check_kon(); }
 #endif
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 inline const SNES_SPC::uint8_t * SNES_SPC::get_ram_coverage() const { return m.ram_coverage; }
 inline SNES_SPC::uint32_t SNES_SPC::get_ram_coverage_size() const { return m.ram_coverage_size; }
 inline const SNES_SPC::uint32_t * SNES_SPC::get_ram_coverage_histogram() const { return m.ram_coverage_histogram; }

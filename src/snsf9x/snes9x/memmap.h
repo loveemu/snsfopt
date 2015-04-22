@@ -235,7 +235,7 @@ struct CMemory
 	uint8	*BSRAM;
 	uint8	*BIOSROM;
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	uint32	*ROMToFileOffsetMap;
 	uint32	*FileToROMOffsetMap;
 

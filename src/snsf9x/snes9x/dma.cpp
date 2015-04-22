@@ -745,7 +745,7 @@ bool8 S9xDoDMA (uint8 Channel)
 						case 0x04: // OAMDATA
 							do
 							{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 								S9xMarkAsRead(base + p);
 #endif
 								Work = *(base + p);
@@ -763,7 +763,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(base + p);
 #endif
 									Work = *(base + p);
@@ -775,7 +775,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(base + p);
 #endif
 									Work = *(base + p);
@@ -794,7 +794,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(base + p);
 #endif
 									Work = *(base + p);
@@ -806,7 +806,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(base + p);
 #endif
 									Work = *(base + p);
@@ -820,7 +820,7 @@ bool8 S9xDoDMA (uint8 Channel)
 						case 0x22: // CGDATA
 							do
 							{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 								S9xMarkAsRead(base + p);
 #endif
 								Work = *(base + p);
@@ -837,7 +837,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							{
 								do
 								{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(base + p);
 #endif
 									Work = *(base + p);
@@ -858,7 +858,7 @@ bool8 S9xDoDMA (uint8 Channel)
 						default:
 							do
 							{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 								S9xMarkAsRead(base + p);
 #endif
 								Work = *(base + p);
@@ -885,7 +885,7 @@ bool8 S9xDoDMA (uint8 Channel)
 								default:
 								while (count > 1)
 								{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(base + p);
 #endif
 									Work = *(base + p);
@@ -894,7 +894,7 @@ bool8 S9xDoDMA (uint8 Channel)
 									count--;
 
 								case 1:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(base + p);
 #endif
 									Work = *(base + p);
@@ -906,7 +906,7 @@ bool8 S9xDoDMA (uint8 Channel)
 
 							if (count == 1)
 							{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 								S9xMarkAsRead(base + p);
 #endif
 								Work = *(base + p);
@@ -924,7 +924,7 @@ bool8 S9xDoDMA (uint8 Channel)
 								default:
 								while (count > 1)
 								{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(base + p);
 #endif
 									Work = *(base + p);
@@ -933,7 +933,7 @@ bool8 S9xDoDMA (uint8 Channel)
 									count--;
 
 								case 1:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(base + p);
 #endif
 									Work = *(base + p);
@@ -945,7 +945,7 @@ bool8 S9xDoDMA (uint8 Channel)
 
 							if (count == 1)
 							{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 								S9xMarkAsRead(base + p);
 #endif
 								Work = *(base + p);
@@ -965,7 +965,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							default:
 							while (count > 1)
 							{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 								S9xMarkAsRead(base + p);
 #endif
 								Work = *(base + p);
@@ -974,7 +974,7 @@ bool8 S9xDoDMA (uint8 Channel)
 								count--;
 
 							case 1:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 								S9xMarkAsRead(base + p);
 #endif
 								Work = *(base + p);
@@ -986,7 +986,7 @@ bool8 S9xDoDMA (uint8 Channel)
 
 						if (count == 1)
 						{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 							S9xMarkAsRead(base + p);
 #endif
 							Work = *(base + p);
@@ -1006,7 +1006,7 @@ bool8 S9xDoDMA (uint8 Channel)
 						default:
 						do
 						{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 							S9xMarkAsRead(base + p);
 #endif
 							Work = *(base + p);
@@ -1019,7 +1019,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 1:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 							S9xMarkAsRead(base + p);
 #endif
 							Work = *(base + p);
@@ -1032,7 +1032,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 2:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 							S9xMarkAsRead(base + p);
 #endif
 							Work = *(base + p);
@@ -1045,7 +1045,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 3:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 							S9xMarkAsRead(base + p);
 #endif
 							Work = *(base + p);
@@ -1067,7 +1067,7 @@ bool8 S9xDoDMA (uint8 Channel)
 						default:
 						do
 						{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 							S9xMarkAsRead(base + p);
 #endif
 							Work = *(base + p);
@@ -1080,7 +1080,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 1:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 							S9xMarkAsRead(base + p);
 #endif
 							Work = *(base + p);
@@ -1093,7 +1093,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 2:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 							S9xMarkAsRead(base + p);
 #endif
 							Work = *(base + p);
@@ -1106,7 +1106,7 @@ bool8 S9xDoDMA (uint8 Channel)
 							}
 
 						case 3:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 							S9xMarkAsRead(base + p);
 #endif
 							Work = *(base + p);
@@ -1714,7 +1714,7 @@ uint8 S9xDoHDMA (uint8 byte)
 							switch (p->TransferMode)
 							{
 								case 0:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(HDMAMemPointers[d]);
 #endif
 									S9xSetPPU(*HDMAMemPointers[d]++, 0x2100 + p->BAddress);
@@ -1722,7 +1722,7 @@ uint8 S9xDoHDMA (uint8 byte)
 									break;
 
 								case 5:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(HDMAMemPointers[d] + 0);
 									S9xMarkAsRead(HDMAMemPointers[d] + 1);
 #endif
@@ -1733,7 +1733,7 @@ uint8 S9xDoHDMA (uint8 byte)
 									HDMAMemPointers[d] += 2;
 									/* fall through */
 								case 1:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(HDMAMemPointers[d] + 0);
 									S9xMarkAsRead(HDMAMemPointers[d] + 1);
 #endif
@@ -1746,7 +1746,7 @@ uint8 S9xDoHDMA (uint8 byte)
 
 								case 2:
 								case 6:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(HDMAMemPointers[d] + 0);
 									S9xMarkAsRead(HDMAMemPointers[d] + 1);
 #endif
@@ -1759,7 +1759,7 @@ uint8 S9xDoHDMA (uint8 byte)
 
 								case 3:
 								case 7:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(HDMAMemPointers[d] + 0);
 									S9xMarkAsRead(HDMAMemPointers[d] + 1);
 									S9xMarkAsRead(HDMAMemPointers[d] + 2);
@@ -1777,7 +1777,7 @@ uint8 S9xDoHDMA (uint8 byte)
 									break;
 
 								case 4:
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 									S9xMarkAsRead(HDMAMemPointers[d] + 0);
 									S9xMarkAsRead(HDMAMemPointers[d] + 1);
 									S9xMarkAsRead(HDMAMemPointers[d] + 2);

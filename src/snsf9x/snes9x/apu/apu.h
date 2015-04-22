@@ -181,7 +181,7 @@
 #include "snes9x.h"
 #include "SNES_SPC.h"
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 #include "../../SPCFile.h"
 #endif
 
@@ -202,7 +202,7 @@ void S9xAPUTimingSetSpeedup (int);
 void S9xAPULoadState (uint8 *);
 void S9xAPUSaveState (uint8 *);
 void S9xDumpSPCSnapshot (void);
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 SPCFile * S9xSPCDump (void);
 #endif
 

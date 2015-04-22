@@ -283,7 +283,7 @@ void S9xMainLoop (void)
 
 		if (CPU.PCBase)
 		{
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 			S9xMarkAsRead(&CPU.PCBase[Registers.PCw]);
 #endif
 			Op = CPU.PCBase[Registers.PCw];

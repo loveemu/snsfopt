@@ -200,7 +200,7 @@ static inline uint8 Immediate8Slow (AccessMode a)
 
 static inline uint8 Immediate8 (AccessMode a)
 {
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	S9xMarkAsRead(&CPU.PCBase[Registers.PCw]);
 #endif
 	uint8	val = CPU.PCBase[Registers.PCw];
@@ -224,7 +224,7 @@ static inline uint16 Immediate16Slow (AccessMode a)
 
 static inline uint16 Immediate16 (AccessMode a)
 {
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	S9xMarkAsRead(&CPU.PCBase[Registers.PCw]);
 	S9xMarkAsRead(&CPU.PCBase[Registers.PCw + 1]);
 #endif
@@ -371,7 +371,7 @@ static inline uint32 AbsoluteLongSlow (AccessMode a)					// l
 
 static inline uint32 AbsoluteLong (AccessMode a)						// l
 {
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	S9xMarkAsRead(&CPU.PCBase[Registers.PCw]);
 	S9xMarkAsRead(&CPU.PCBase[Registers.PCw + 1]);
 	S9xMarkAsRead(&CPU.PCBase[Registers.PCw + 2]);

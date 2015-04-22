@@ -25,7 +25,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 #define CPU_WRITE( time, offset, addr, data )\
 	cpu_write( data, addr, time + offset )
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 #define MARK_AS_READ( addr )	mark_as_read( addr )
 #else
 #define MARK_AS_READ( addr )
@@ -295,7 +295,7 @@ loop:
 		{
 			int i = dp + temp;
 			ram [i] = (uint8_t) data;
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 			mark_as_read(i);
 #endif
 			i -= 0xF0;
@@ -321,7 +321,7 @@ loop:
 		{
 			int i = dp + data;
 			ram [i] = (uint8_t) a;
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 			mark_as_read(i);
 #endif
 			i -= 0xF0;
@@ -976,7 +976,7 @@ loop:
 		int ret_addr = GET_PC();
 		SUSPICIOUS_OPCODE( "BRK" );
 		SET_PC( READ_PROG16( 0xFFDE ) ); // vector address verified
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 		mark_as_read( 0xFFDE );
 #endif
 		PUSH16(ret_addr);

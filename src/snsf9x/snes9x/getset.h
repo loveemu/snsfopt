@@ -240,7 +240,7 @@ static inline int32 memory_speed (uint32 address)
 	return (TWO_CYCLES);
 }
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 inline bool S9xMarkAsRead(uint8 * ptrToByte)
 {
 	if (ptrToByte >= Memory.ROM && ptrToByte < Memory.ROM + CMemory::MAX_ROM_SIZE)
@@ -278,7 +278,7 @@ inline uint8 S9xGetByte (uint32 Address)
 		byte = *(GetAddress + (Address & 0xffff));
 		addCyclesInMemoryAccess;
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 		uint8 * ptrToByte = GetAddress + (Address & 0xffff);
 		S9xMarkAsRead(ptrToByte);
 #endif
@@ -420,7 +420,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 		word = READ_WORD(GetAddress + (Address & 0xffff));
 		addCyclesInMemoryAccess_x2;
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 		uint8 * ptrToByte = GetAddress + (Address & 0xffff);
 		S9xMarkAsRead(ptrToByte);
 		S9xMarkAsRead(ptrToByte + 1);

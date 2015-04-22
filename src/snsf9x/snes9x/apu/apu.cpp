@@ -185,7 +185,7 @@
 #include "linear_resampler.h"
 #include "hermite_resampler.h"
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 #include "../SNESSystem.h"
 #include "../../SPCFile.h"
 
@@ -497,7 +497,7 @@ void S9xDumpSPCSnapshot (void)
 	spc_core->dsp_dump_spc_snapshot();
 #endif
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	spc_core->dsp_dump_spc_snapshot();
 #endif
 }
@@ -509,7 +509,7 @@ static void SPCSnapshotCallback (void)
 	printf("Dumped key-on triggered spc snapshot.\n");
 #endif
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	if (spc_snessystem != NULL) {
 		SPCFile * spc_file = S9xSPCDump();
 		spc_snessystem->SPCSnapshotCallback(spc_file);
@@ -679,7 +679,7 @@ void S9xAPULoadState (uint8 *block)
 	spc::remainder = GET_LE32(ptr);
 }
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 
 SPCFile * S9xSPCDump (void)
 {

@@ -414,7 +414,7 @@ void SNES_SPC::cpu_write( int data, int addr, rel_time_t time )
 {
 	MEM_ACCESS(time, addr)
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	mark_as_written(addr);
 #endif
 
@@ -473,7 +473,7 @@ int SNES_SPC::cpu_read( int addr, rel_time_t time )
 	MEM_ACCESS(time, addr)
 
 	// RAM
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	mark_as_read(addr);
 #endif
 	int result = RAM [addr];
@@ -547,7 +547,7 @@ void SNES_SPC::end_frame( time_t end_time )
 	m.spc_time     -= end_time;
 	m.extra_clocks += end_time;
 	
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	m.total_clocks += end_time;
 #endif
 
@@ -571,7 +571,7 @@ void SNES_SPC::end_frame( time_t end_time )
 		save_extra();
 }
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 void SNES_SPC::mark_as_read(uint16_t address)
 {
 	// mark only constant data

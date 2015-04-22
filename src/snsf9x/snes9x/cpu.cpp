@@ -282,7 +282,7 @@ void S9xReset (void)
 	memset(Memory.VRAM, 0x00, 0x10000);
 	ZeroMemory(Memory.FillRAM, 0x8000);
 
-#ifdef SNSFOPT
+#ifndef SNSFOPT_REMOVED
 	memset(Memory.ROMCoverage, 0x00, CMemory::MAX_ROM_SIZE);
 	memset(Memory.ROMCoverageHistogram, 0x00, sizeof(uint32) * 256);
 	Memory.ROMCoverageSize = 0;
@@ -298,7 +298,6 @@ void S9xReset (void)
 			S9xMarkAsRead(&Memory.ROM[0x400000 + offset + 0x8000]);
 		}
 	}
-
 #endif
 
 #ifdef SNSF9X_REMOVED
