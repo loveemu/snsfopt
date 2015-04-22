@@ -1818,10 +1818,10 @@ int main(int argc, char *argv[])
 				opt.Optimize();
 
 #ifdef _DEBUG
-				for (int count = 1; count <= opt.GetTargetLoopCount(); count++)
-				{
-					printf("Loop Point %d = %s\n", count, opt.GetLoopPointString(count).c_str());
-				}
+				//for (int count = 1; count <= opt.GetTargetLoopCount(); count++)
+				//{
+				//	printf("Loop Point %d = %s\n", count, opt.GetLoopPointString(count).c_str());
+				//}
 #endif
 
 				if (addSNSFTags)

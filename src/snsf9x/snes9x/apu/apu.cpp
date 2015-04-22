@@ -448,7 +448,9 @@ bool8 S9xInitSound (int buffer_ms, int lag_ms)
 	if (Settings.SixteenBitSound)
 		spc::buffer_size <<= 1;
 
+#ifdef SNSFOPT_REMOVED
 	printf("Sound buffer size: %d (%d samples)\n", spc::buffer_size, sample_count);
+#endif
 
 	if (spc::landing_buffer)
 		delete[] spc::landing_buffer;
