@@ -2573,13 +2573,17 @@ void CMemory::InitROM (void)
 		case 0x2530:
 			Settings.OBC1 = TRUE;
 			break;
+#endif
 
+#ifndef SNSF9X_REMOVED_SA1
 		// SA1
 		case 0x3423:
 		case 0x3523:
 			Settings.SA1 = TRUE;
 			break;
+#endif
 
+#ifdef SNSF9X_REMOVED
 		// SuperFX
 		case 0x1320:
 		case 0x1420:
