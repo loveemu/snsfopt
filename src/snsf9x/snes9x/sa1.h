@@ -17,11 +17,12 @@
 
   (c) Copyright 2002 - 2010  Brad Jorsch (anomie@users.sourceforge.net),
                              Nach (n-a-c-h@users.sourceforge.net),
-                             zones (kasumitokoduck@yahoo.com)
+
+  (c) Copyright 2002 - 2011  zones (kasumitokoduck@yahoo.com)
 
   (c) Copyright 2006 - 2007  nitsuja
 
-  (c) Copyright 2009 - 2010  BearOso,
+  (c) Copyright 2009 - 2011  BearOso,
                              OV2
 
 
@@ -130,7 +131,7 @@
   (c) Copyright 2006 - 2007  Shay Green
 
   GTK+ GUI code
-  (c) Copyright 2004 - 2010  BearOso
+  (c) Copyright 2004 - 2011  BearOso
 
   Win32 GUI code
   (c) Copyright 2003 - 2006  blip,
@@ -138,11 +139,11 @@
                              Matthew Kendora,
                              Nach,
                              nitsuja
-  (c) Copyright 2009 - 2010  OV2
+  (c) Copyright 2009 - 2011  OV2
 
   Mac OS GUI code
   (c) Copyright 1998 - 2001  John Stiles
-  (c) Copyright 2001 - 2010  zones
+  (c) Copyright 2001 - 2011  zones
 
 
   Specific ports contains the works of other authors. See headers in
@@ -175,213 +176,149 @@
  ***********************************************************************************/
 
 
-#include "snes9x.h"
-#include "memmap.h"
-#include "dma.h"
-#include "apu/apu.h"
+#ifndef _SA1_H_
+#define _SA1_H_
+
 #ifdef SNSF9X_REMOVED
-#include "fxemu.h"
-#endif
-#include "sa1.h"
-#include "sdd1.h"
-#ifdef SNSF9X_REMOVED
-#include "srtc.h"
-#include "snapshot.h"
-#include "cheats.h"
-#include "logger.h"
-#ifdef DEBUGGER
-#include "debug.h"
-#endif
-#endif
-
-static void S9xResetCPU (void);
-static void S9xSoftResetCPU (void);
-
-
-static void S9xResetCPU (void)
+struct SSA1Registers
 {
-	S9xSoftResetCPU();
-	Registers.SL = 0xff;
-	Registers.P.W = 0;
-	Registers.A.W = 0;
-	Registers.X.W = 0;
-	Registers.Y.W = 0;
-	SetFlags(MemoryFlag | IndexFlag | IRQ | Emulation);
-	ClearFlags(Decimal);
+	uint8	DB;
+	pair	P;
+	pair	A;
+	pair	D;
+	pair	S;
+	pair	X;
+	pair	Y;
+	PC_t	PC;
+};
+
+struct SSA1
+{
+	struct SOpcodes	*S9xOpcodes;
+	uint8	*S9xOpLengths;
+	uint8	_Carry;
+	uint8	_Zero;
+	uint8	_Negative;
+	uint8	_Overflow;
+	uint32	ShiftedPB;
+	uint32	ShiftedDB;
+
+	uint32	Flags;
+	int32	Cycles;
+	int32	PrevCycles;
+	uint8	*PCBase;
+	bool8	WaitingForInterrupt;
+
+	uint8	*Map[MEMMAP_NUM_BLOCKS];
+	uint8	*WriteMap[MEMMAP_NUM_BLOCKS];
+	uint8	*BWRAM;
+
+	bool8	in_char_dma;
+	bool8	TimerIRQLastState;
+	uint16	HTimerIRQPos;
+	uint16	VTimerIRQPos;
+	int16	HCounter;
+	int16	VCounter;
+	int16	PrevHCounter;
+	int32	MemSpeed;
+	int32	MemSpeedx2;
+	int32	arithmetic_op;
+	uint16	op1;
+	uint16	op2;
+	uint64	sum;
+	bool8	overflow;
+	uint8	VirtualBitmapFormat;
+	uint8	variable_bit_pos;
+};
+
+#define SA1CheckCarry()		(SA1._Carry)
+#define SA1CheckZero()		(SA1._Zero == 0)
+#define SA1CheckIRQ()		(SA1Registers.PL & IRQ)
+#define SA1CheckDecimal()	(SA1Registers.PL & Decimal)
+#define SA1CheckIndex()		(SA1Registers.PL & IndexFlag)
+#define SA1CheckMemory()	(SA1Registers.PL & MemoryFlag)
+#define SA1CheckOverflow()	(SA1._Overflow)
+#define SA1CheckNegative()	(SA1._Negative & 0x80)
+#define SA1CheckEmulation()	(SA1Registers.P.W & Emulation)
+
+#define SA1SetFlags(f)		(SA1Registers.P.W |= (f))
+#define SA1ClearFlags(f)	(SA1Registers.P.W &= ~(f))
+#define SA1CheckFlag(f)		(SA1Registers.PL & (f))
+
+extern struct SSA1Registers	SA1Registers;
+extern struct SSA1			SA1;
+extern uint8				SA1OpenBus;
+extern struct SOpcodes		S9xSA1OpcodesM1X1[256];
+extern struct SOpcodes		S9xSA1OpcodesM1X0[256];
+extern struct SOpcodes		S9xSA1OpcodesM0X1[256];
+extern struct SOpcodes		S9xSA1OpcodesM0X0[256];
+extern uint8				S9xOpLengthsM1X1[256];
+extern uint8				S9xOpLengthsM1X0[256];
+extern uint8				S9xOpLengthsM0X1[256];
+extern uint8				S9xOpLengthsM0X0[256];
+
+uint8 S9xSA1GetByte (uint32);
+void S9xSA1SetByte (uint8, uint32);
+uint16 S9xSA1GetWord (uint32, enum s9xwrap_t w = WRAP_NONE);
+void S9xSA1SetWord (uint16, uint32, enum s9xwrap_t w = WRAP_NONE, enum s9xwriteorder_t o = WRITE_01);
+void S9xSA1SetPCBase (uint32);
+uint8 S9xGetSA1 (uint32);
+void S9xSetSA1 (uint8, uint32);
+#endif
+void S9xSA1Init (void);
+void S9xSA1MainLoop (void);
+void S9xSA1PostLoadState (void);
+
+#ifdef SNSF9X_REMOVED
+static inline void S9xSA1UnpackStatus (void)
+{
+	SA1._Zero = (SA1Registers.PL & Zero) == 0;
+	SA1._Negative = (SA1Registers.PL & Negative);
+	SA1._Carry = (SA1Registers.PL & Carry);
+	SA1._Overflow = (SA1Registers.PL & Overflow) >> 6;
 }
 
-static void S9xSoftResetCPU (void)
+static inline void S9xSA1PackStatus (void)
 {
-	Registers.PBPC = 0;
-	Registers.PB = 0;
-	CPU.InDMAorHDMA = TRUE; // hangs on addCyclesInMemoryAccess_x2 when S9X_ACCURACY_LEVEL >= 2
-	Registers.PCw = S9xGetWord(0xfffc);
-	OpenBus = Registers.PCh;
-	Registers.D.W = 0;
-	Registers.DB = 0;
-	Registers.SH = 1;
-	Registers.SL -= 3;
-	Registers.XH = 0;
-	Registers.YH = 0;
-
-	ICPU.ShiftedPB = 0;
-	ICPU.ShiftedDB = 0;
-	SetFlags(MemoryFlag | IndexFlag | IRQ | Emulation);
-	ClearFlags(Decimal);
-
-	CPU.Cycles = 182; // Or 188. This is the cycle count just after the jump to the Reset Vector.
-	CPU.PrevCycles = -1;
-	CPU.V_Counter = 0;
-	CPU.Flags = CPU.Flags & (DEBUG_MODE_FLAG | TRACE_FLAG);
-	CPU.PCBase = NULL;
-	CPU.IRQActive = FALSE;
-	CPU.IRQPending = 0;
-	CPU.MemSpeed = SLOW_ONE_CYCLE;
-	CPU.MemSpeedx2 = SLOW_ONE_CYCLE * 2;
-	CPU.FastROMSpeed = SLOW_ONE_CYCLE;
-	CPU.InDMA = FALSE;
-	CPU.InHDMA = FALSE;
-	CPU.InDMAorHDMA = FALSE;
-	CPU.InWRAMDMAorHDMA = FALSE;
-	CPU.HDMARanInDMA = 0;
-	CPU.CurrentDMAorHDMAChannel = -1;
-	CPU.WhichEvent = HC_RENDER_EVENT;
-	CPU.NextEvent  = Timings.RenderPos;
-	CPU.WaitingForInterrupt = FALSE;
-	CPU.WaitAddress = 0xffffffff;
-	CPU.WaitCounter = 0;
-	CPU.PBPCAtOpcodeStart = 0xffffffff;
-	CPU.AutoSaveTimer = 0;
-	CPU.SRAMModified = FALSE;
-
-	Timings.InterlaceField = FALSE;
-	Timings.H_Max = Timings.H_Max_Master;
-	Timings.V_Max = Timings.V_Max_Master;
-	Timings.NMITriggerPos = 0xffff;
-	if (Model->_5A22 == 2)
-		Timings.WRAMRefreshPos = SNES_WRAM_REFRESH_HC_v2;
-	else
-		Timings.WRAMRefreshPos = SNES_WRAM_REFRESH_HC_v1;
-
-	S9xSetPCBase(Registers.PBPC);
-
-	ICPU.S9xOpcodes = S9xOpcodesE1;
-	ICPU.S9xOpLengths = S9xOpLengthsM1X1;
-	ICPU.CPUExecuting = TRUE;
-
-	S9xUnpackStatus();
+	SA1Registers.PL &= ~(Zero | Negative | Carry | Overflow);
+	SA1Registers.PL |= SA1._Carry | ((SA1._Zero == 0) << 1) | (SA1._Negative & 0x80) | (SA1._Overflow << 6);
 }
 
-void S9xReset (void)
+static inline void S9xSA1FixCycles (void)
 {
-#ifdef SNSF9X_REMOVED
-	S9xResetSaveTimer(FALSE);
-	S9xResetLogger();
-#endif
-
-	memset(Memory.RAM, 0x55, 0x20000);
-	memset(Memory.VRAM, 0x00, 0x10000);
-	ZeroMemory(Memory.FillRAM, 0x8000);
-
-#ifndef SNSFOPT_REMOVED
-	memset(Memory.ROMCoverage, 0x00, CMemory::MAX_ROM_SIZE);
-	memset(Memory.ROMCoverageHistogram, 0x00, sizeof(uint32) * 256);
-	Memory.ROMCoverageSize = 0;
-
-	for (uint32 offset = 0x7fb0; offset <= 0x7fff; offset++)
+	if (SA1CheckEmulation())
 	{
-		S9xMarkAsRead(&Memory.ROM[offset]);
-		S9xMarkAsRead(&Memory.ROM[offset + 0x8000]);
-
-		if (Memory.ExtendedFormat != CMemory::NOPE)
+		SA1.S9xOpcodes = S9xSA1OpcodesM1X1;
+		SA1.S9xOpLengths = S9xOpLengthsM1X1;
+	}
+	else
+	if (SA1CheckMemory())
+	{
+		if (SA1CheckIndex())
 		{
-			S9xMarkAsRead(&Memory.ROM[0x400000 + offset]);
-			S9xMarkAsRead(&Memory.ROM[0x400000 + offset + 0x8000]);
+			SA1.S9xOpcodes = S9xSA1OpcodesM1X1;
+			SA1.S9xOpLengths = S9xOpLengthsM1X1;
+		}
+		else
+		{
+			SA1.S9xOpcodes = S9xSA1OpcodesM1X0;
+			SA1.S9xOpLengths = S9xOpLengthsM1X0;
 		}
 	}
-#endif
-
-#ifdef SNSF9X_REMOVED
-	if (Settings.BS)
-		S9xResetBSX();
-#endif
-
-	S9xResetCPU();
-	S9xResetPPU();
-	S9xResetDMA();
-	S9xResetAPU();
-
-#ifdef SNSF9X_REMOVED
-	if (Settings.DSP)
-		S9xResetDSP();
-	if (Settings.SuperFX)
-		S9xResetSuperFX();
-#endif
-#ifndef SNSF9X_REMOVED_SA1
-	if (Settings.SA1)
-		S9xSA1Init();
-#endif
-#ifndef SNSF9X_REMOVED_SDD1
-	if (Settings.SDD1)
-		S9xResetSDD1();
-#endif
-#ifdef SNSF9X_REMOVED
-	if (Settings.SPC7110)
-		S9xResetSPC7110();
-	if (Settings.C4)
-		S9xInitC4();
-	if (Settings.OBC1)
-		S9xResetOBC1();
-	if (Settings.SRTC)
-		S9xResetSRTC();
-
-	S9xInitCheatData();
-#endif
+	else
+	{
+		if (SA1CheckIndex())
+		{
+			SA1.S9xOpcodes = S9xSA1OpcodesM0X1;
+			SA1.S9xOpLengths = S9xOpLengthsM0X1;
+		}
+		else
+		{
+			SA1.S9xOpcodes = S9xSA1OpcodesM0X0;
+			SA1.S9xOpLengths = S9xOpLengthsM0X0;
+		}
+	}
 }
-
-void S9xSoftReset (void)
-{
-#ifdef SNSF9X_REMOVED
-	S9xResetSaveTimer(FALSE);
 #endif
 
-	memset(Memory.VRAM, 0x00, 0x10000);
-	ZeroMemory(Memory.FillRAM, 0x8000);
-
-#ifdef SNSF9X_REMOVED
-	if (Settings.BS)
-		S9xResetBSX();
 #endif
-
-	S9xSoftResetCPU();
-	S9xSoftResetPPU();
-	S9xResetDMA();
-	S9xSoftResetAPU();
-
-#ifdef SNSF9X_REMOVED
-	if (Settings.DSP)
-		S9xResetDSP();
-	if (Settings.SuperFX)
-		S9xResetSuperFX();
-#endif
-#ifndef SNSF9X_REMOVED_SA1
-	if (Settings.SA1)
-		S9xSA1Init();
-#endif
-#ifndef SNSF9X_REMOVED_SDD1
-	if (Settings.SDD1)
-		S9xResetSDD1();
-#endif
-#ifdef SNSF9X_REMOVED
-	if (Settings.SPC7110)
-		S9xResetSPC7110();
-	if (Settings.C4)
-		S9xInitC4();
-	if (Settings.OBC1)
-		S9xResetOBC1();
-	if (Settings.SRTC)
-		S9xResetSRTC();
-
-	S9xInitCheatData();
-#endif
-}

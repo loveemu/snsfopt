@@ -185,6 +185,7 @@
     <ClCompile Include="snsf9x\snes9x\globals.cpp" />
     <ClCompile Include="snsf9x\snes9x\memmap.cpp" />
     <ClCompile Include="snsf9x\snes9x\ppu.cpp" />
+    <ClCompile Include="snsf9x\snes9x\sa1.cpp" />
     <ClCompile Include="snsf9x\snes9x\sdd1.cpp" />
     <ClCompile Include="snsf9x\SNESSystem.cpp" />
     <ClCompile Include="snsfopt.cpp" />
@@ -220,6 +221,7 @@
     <ClInclude Include="snsf9x\snes9x\pixform.h" />
     <ClInclude Include="snsf9x\snes9x\port.h" />
     <ClInclude Include="snsf9x\snes9x\ppu.h" />
+    <ClInclude Include="snsf9x\snes9x\sa1.h" />
     <ClInclude Include="snsf9x\snes9x\sdd1.h" />
     <ClInclude Include="snsf9x\snes9x\snes9x.h" />
     <ClInclude Include="snsf9x\SNESSystem.h" />

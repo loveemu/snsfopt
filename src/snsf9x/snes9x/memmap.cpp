@@ -3620,9 +3620,11 @@ const char * CMemory::KartContents (void)
 	else
 	if (Settings.OBC1)
 		strcpy(chip, "+OBC1");
+#endif
 	else
 	if (Settings.SA1)
 		strcpy(chip, "+SA-1");
+#ifdef SNSF9X_REMOVED
 	else
 	if (Settings.SPC7110RTC)
 		strcpy(chip, "+SPC7110+RTC");
