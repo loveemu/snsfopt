@@ -247,3 +247,13 @@ const uint32_t * SNESSystem::GetAPURAMCoverageHistogram() const
 {
 	return (const uint32_t *)spc_core->get_ram_coverage_histogram();
 }
+
+bool SNESSystem::GetDSPResetAccuracy() const
+{
+	return (S9xAccurateDSPReset != FALSE) ? true : false;
+}
+
+void SNESSystem::SetDSPResetAccuracy(bool dsp_reset_accuracy)
+{
+	S9xAccurateDSPReset = dsp_reset_accuracy ? TRUE : FALSE;
+}

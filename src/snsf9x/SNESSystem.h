@@ -49,6 +49,9 @@ public:
 	uint32_t GetAPURAMCoverageSize() const;
 	const uint32_t * GetAPURAMCoverageHistogram() const;
 
+	bool GetDSPResetAccuracy() const;
+	void SetDSPResetAccuracy(bool dsp_reset_accuracy);
+
 	uint32_t rom_size;
 
 protected:

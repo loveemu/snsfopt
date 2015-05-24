@@ -29,10 +29,10 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 //// Init
 
-blargg_err_t SNES_SPC::init()
+blargg_err_t SNES_SPC::init( bool accurate_dsp_reset )
 {
 	memset( &m, 0, sizeof m );
-	dsp.init( RAM );
+	dsp.init( RAM, accurate_dsp_reset );
 	
 	m.tempo = tempo_unit;
 	

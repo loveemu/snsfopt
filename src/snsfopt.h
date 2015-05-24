@@ -23,7 +23,7 @@ public:
 	void PatchROM(uint32_t offset, const void * data, uint32_t size, bool apply_base_offset);
 	void ResetGame(void);
 
-	void ResetOptimizer(void);
+	void ResetOptimizer(bool dsp_reset_accuracy = true);
 	virtual void Optimize(void);
 	virtual void DumpSPC(const std::string & filename);
 	void Run(void (SnsfOpt::*Start)(), void (SnsfOpt::*BeforeLoop)(), void (SnsfOpt::*AfterLoop)(), bool (SnsfOpt::*Finished)(), void (SnsfOpt::*End)(), void (SnsfOpt::*ShowProgress)() const, void (SnsfOpt::*ShowResult)() const);

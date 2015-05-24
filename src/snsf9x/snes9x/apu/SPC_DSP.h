@@ -15,7 +15,7 @@ public:
 // Setup
 
 	// Initializes DSP and has it use the 64K RAM provided
-	void init( void* ram_64k );
+	void init( void* ram_64k, bool accurate_dsp_reset );
 
 	// Sets destination for output samples. If out is NULL or out_size is 0,
 	// doesn't generate any.
@@ -244,6 +244,8 @@ private:
 	void echo_30();
 	
 	void soft_reset_common();
+
+	bool accurate_reset;
 };
 
 #include <assert.h>

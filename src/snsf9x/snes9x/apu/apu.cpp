@@ -191,6 +191,7 @@
 
 SPCFile * S9xLastSPCSnapshot = NULL;
 bool8 S9xTakingSPCSnapshot = FALSE;
+bool8 S9xAccurateDSPReset = TRUE;
 #endif
 
 #define APU_DEFAULT_INPUT_RATE		32000
@@ -527,7 +528,11 @@ bool8 S9xInitAPU (void)
 	if (!spc_core)
 		return (FALSE);
 
+#ifndef SNSFOPT_REMOVED
+	spc_core->init((S9xAccurateDSPReset != FALSE) ? true : false);
+#else
 	spc_core->init();
+#endif
 	spc_core->init_rom(APUROM);
 
 	spc_core->dsp_set_spc_snapshot_callback(SPCSnapshotCallback);

@@ -208,6 +208,7 @@ SPCFile * S9xSPCDump (void);
 START_EXTERN_C
 extern SPCFile * S9xLastSPCSnapshot;
 extern bool8 S9xTakingSPCSnapshot;
+extern bool8 S9xAccurateDSPReset;
 END_EXTERN_C
 #endif
 

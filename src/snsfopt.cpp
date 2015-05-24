@@ -614,7 +614,7 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 	return true;
 }
 
-void SnsfOpt::ResetOptimizer(void)
+void SnsfOpt::ResetOptimizer(bool dsp_reset_accuracy)
 {
 	memset(rom_refs, 0, SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE);
 	memset(rom_refs_histogram, 0, sizeof(rom_refs_histogram));
@@ -623,6 +623,8 @@ void SnsfOpt::ResetOptimizer(void)
 	memset(apuram_refs, 0, SNES_APU_RAM_SIZE);
 	memset(apuram_refs_histogram, 0, sizeof(apuram_refs_histogram));
 	apuram_bytes_used = 0;
+
+	m_system->SetDSPResetAccuracy(dsp_reset_accuracy);
 }
 
 void SnsfOpt::Run(void (SnsfOpt::*Start)(), void (SnsfOpt::*BeforeLoop)(), void (SnsfOpt::*AfterLoop)(), bool (SnsfOpt::*Finished)(), void (SnsfOpt::*End)(), void (SnsfOpt::*ShowProgress)() const, void (SnsfOpt::*ShowResult)() const)
@@ -1851,7 +1853,7 @@ int main(int argc, char *argv[])
 					}
 				}
 
-				opt.ResetOptimizer();
+				opt.ResetOptimizer(false);
 				if (!opt.LoadROMFile(argv[i]))
 				{
 					fprintf(stderr, "Error: %s\n", opt.message().c_str());

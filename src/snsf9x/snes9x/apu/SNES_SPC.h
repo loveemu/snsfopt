@@ -12,7 +12,7 @@ public:
 	typedef BOOST::uint8_t uint8_t;
 	
 	// Must be called once before using
-	blargg_err_t init();
+	blargg_err_t init( bool accurate_dsp_reset );
 	
 	// Sample pairs generated per second
 	enum { sample_rate = 32000 };
