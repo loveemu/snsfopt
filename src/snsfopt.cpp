@@ -33,7 +33,7 @@
 #endif
 
 #define APP_NAME    "snsfopt"
-#define APP_VER     "[2015-05-24]"
+#define APP_VER     "[2015-07-01]"
 #define APP_URL     "http://github.com/loveemu/snsfopt"
 
 #define SNSF_PSF_VERSION		0x23
@@ -1914,7 +1914,14 @@ int main(int argc, char *argv[])
 
 					if (opt.IsOneShot())
 					{
-						snsf->tags["length"] = SnsfOpt::ToTimeString(opt.GetOneShotEndPoint() + oneshotPostgapLength - opt.GetInitialSilenceLength(), false);
+						if (opt.GetOneShotEndPoint() == opt.GetInitialSilenceLength())
+						{
+							snsf->tags["length"] = "0";
+						}
+						else
+						{
+							snsf->tags["length"] = SnsfOpt::ToTimeString(opt.GetOneShotEndPoint() + oneshotPostgapLength - opt.GetInitialSilenceLength(), false);
+						}
 						snsf->tags["fade"] = "0";
 					}
 					else
