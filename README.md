@@ -26,6 +26,9 @@ Syntax: `snsfopt [options] [-s or -l or -f or -r or -x or -t] [snsf files]`
   : I am paranoid, and wish to assume that any data within [bytes] bytes of a used byte,
     is also used
 
+`-cs`
+  : Correct header checksum before writing a ROM/SNSF.
+
 `--offset [load offset]`
   : Load offset of the base snsflib file.
     (The option works only if the input is SNES ROM file)

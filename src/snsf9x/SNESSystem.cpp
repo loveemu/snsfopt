@@ -257,3 +257,34 @@ void SNESSystem::SetDSPResetAccuracy(bool dsp_reset_accuracy)
 {
 	S9xAccurateDSPReset = dsp_reset_accuracy ? TRUE : FALSE;
 }
+
+uint16_t SNESSystem::GetROMChecksum() const
+{
+	return Memory.CalculatedChecksum;
+}
+
+void SNESSystem::FixROMChecksum(uint8_t * rom)
+{
+	// Note: Input ROM must have the same format with the ROM loaded by Snes9x.
+
+	uint8 * ROM_origin = Memory.ROM;
+	Memory.ROM = rom;
+
+	Memory.Checksum_Calculate();
+
+	uint8	*RomHeader = Memory.ROM + 0x7FB0;
+	if (Memory.ExtendedFormat == CMemory::BIGFIRST)
+		RomHeader += 0x400000;
+	if (Memory.HiROM)
+		RomHeader += 0x8000;
+
+	Memory.ParseSNESHeader(RomHeader);
+
+	RomHeader[0x2E] = Memory.CalculatedChecksum & 0xFF;
+	RomHeader[0x2F] = (Memory.CalculatedChecksum >> 8) & 0xFF;
+	RomHeader[0x2C] = RomHeader[0x2E] ^ 0xFF;
+	RomHeader[0x2D] = RomHeader[0x2F] ^ 0xFF;
+
+	Memory.ROM = ROM_origin;
+	Memory.Checksum_Calculate();
+}

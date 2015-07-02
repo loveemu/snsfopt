@@ -52,6 +52,9 @@ public:
 	bool GetDSPResetAccuracy() const;
 	void SetDSPResetAccuracy(bool dsp_reset_accuracy);
 
+	uint16_t GetROMChecksum() const;
+	void FixROMChecksum(uint8_t * rom);
+
 	uint32_t rom_size;
 
 protected:

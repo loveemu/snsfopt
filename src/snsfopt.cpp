@@ -33,7 +33,7 @@
 #endif
 
 #define APP_NAME    "snsfopt"
-#define APP_VER     "[2015-07-01]"
+#define APP_VER     "[2015-07-02]"
 #define APP_URL     "http://github.com/loveemu/snsfopt"
 
 #define SNSF_PSF_VERSION		0x23
@@ -60,7 +60,8 @@ SnsfOpt::SnsfOpt() :
 	paranoid_bytes(0),
 	snsf_base_offset(0),
 	spc_snapshot_dumped(NULL),
-	DelayedSPCDump(false)
+	DelayedSPCDump(false),
+	FixROMChecksum(false)
 {
 	m_system = new SNESSystem;
 	rom_refs = new uint8_t[SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE];
@@ -1101,6 +1102,11 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 		m_system->ReadROM(rom, size, 0);
 	}
 
+	if (FixROMChecksum)
+	{
+		m_system->FixROMChecksum((uint8_t *)rom);
+	}
+
 	return true;
 }
 
@@ -1217,6 +1223,9 @@ static void usage(const char * progname, bool extended)
 		printf("`-P [bytes]`\n");
 		printf("  : I am paranoid, and wish to assume that any data \n");
 		printf("    within [bytes] bytes of a used byte, is also used\n");
+		printf("\n");
+		printf("`-cs`\n");
+		printf("  : Correct header checksum before writing a ROM/SNSF.\n");
 		printf("\n");
 		printf("`--offset [load offset]`\n");
 		printf("  : Load offset of the base snsflib file.\n");
@@ -1445,6 +1454,10 @@ int main(int argc, char *argv[])
 			}
 			opt.SetSNSFBaseOffset((uint32_t)l);
 			argi++;
+		}
+		else if (strcmp(argv[argi], "-cs") == 0 || strcmp(argv[argi], "--fix-checksum") == 0)
+		{
+			opt.FixROMChecksum = true;
 		}
 		else
 		{
