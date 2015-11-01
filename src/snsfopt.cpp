@@ -33,7 +33,7 @@
 #endif
 
 #define APP_NAME    "snsfopt"
-#define APP_VER     "[2015-07-02]"
+#define APP_VER     "[2015-11-01]"
 #define APP_URL     "http://github.com/loveemu/snsfopt"
 
 #define SNSF_PSF_VERSION		0x23
@@ -607,6 +607,8 @@ bool SnsfOpt::ReadSNSFFile(const std::string& filename, unsigned int nesting_lev
 			chdir(savedcwd);
 			return false;
 		}
+
+		libN++;
 	}
 
 	m_message = filename + " - " + "Loaded successfully";
