@@ -29,8 +29,8 @@ public:
 	inline bool writeShort(uint16_t value)
 	{
 		uint8_t data[2] = {
-			value & 0xff,
-			(value >> 8) & 0xff,
+			(uint8_t)(value & 0xff),
+			(uint8_t)((value >> 8) & 0xff),
 		};
 		return write(data, 2) == 2;
 	}
