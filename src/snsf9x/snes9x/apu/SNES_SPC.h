@@ -184,7 +184,7 @@ private:
 		const char* cpu_error;
 
 #ifndef SNSFOPT_REMOVED
-		int         total_clocks;
+		int64_t     total_clocks;
 #endif
 
 		int         extra_clocks;
@@ -212,7 +212,7 @@ private:
 
 #ifndef SNSFOPT_REMOVED
 		uint8_t ram_coverage[0x10000];
-		int ram_coverage_timestamp[0x10000];
+		int64_t ram_coverage_timestamp[0x10000];
 		uint8_t ram_write_coverage[0x10000];
 		uint32_t ram_coverage_size;
 		uint32_t ram_coverage_histogram[256];
