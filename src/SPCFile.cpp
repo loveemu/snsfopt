@@ -720,7 +720,7 @@ std::string SPCFile::XID6TicksToTimeString(uint32_t ticks, bool padding)
 
 	if (!padding) {
 		size_t len = strlen(str);
-		for (size_t i = len - 1; i >= 0; i--) {
+		for (off_t i = (off_t)(len - 1); i >= 0; i--) {
 			if (str[i] == '0') {
 				str[i] = '\0';
 			}
@@ -1015,7 +1015,6 @@ bool SPCFile::ImportPSFTag(const std::map<std::string, std::string> & psf_tags)
 			else {
 				long num = strtol(value.c_str(), &endptr, 10);
 				if (*endptr == '\0') {
-					uint32_t volume = (uint32_t)(num * 65536);
 					SetLengthTag(XID6_OST_DISC, (uint16_t)num);
 				}
 				else {
@@ -1279,6 +1278,10 @@ std::map<std::string, std::string> SPCFile::ExportPSFTag(bool unofficial_tags) c
 				case XID6_LOOP_COUNT:
 					sprintf(s, "%d", GetIntegerTag(id));
 					psf_tags["loopcount"] = s;
+					break;
+
+				default:
+					// Unsupported tags, they will be lost.
 					break;
 				}
 			}
