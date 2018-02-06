@@ -4,6 +4,7 @@
 #include <string.h>
 #include <memory.h>
 #include <stdint.h>
+#include <math.h>
 
 #include <iostream>
 #include <sstream>
