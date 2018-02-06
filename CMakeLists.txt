@@ -26,8 +26,6 @@ if(MSVC)
     set(ZLIB_ROOT ${CMAKE_SOURCE_DIR}/dependencies/zlib)
     set(ZLIB_LIBRARY ${CMAKE_SOURCE_DIR}/dependencies/zlib/lib/${MSVC_ARCHITECTURE_NAME}/zlibstat.lib)
     add_definitions(-DZLIB_WINAPI)
-
-    add_definitions(-DHAVE_STDINT_H)
 endif()
 
 find_package(ZLIB REQUIRED)
