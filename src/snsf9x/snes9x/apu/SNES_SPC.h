@@ -119,6 +119,7 @@ public:
 	
 #ifndef SNSFOPT_REMOVED
 	typedef BOOST::uint32_t uint32_t;
+	typedef BOOST::int64_t int64_t;
 
 	void mark_as_read(uint16_t address);
 	void mark_as_written(uint16_t address);

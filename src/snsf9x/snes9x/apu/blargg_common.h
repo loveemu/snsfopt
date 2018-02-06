@@ -179,6 +179,15 @@ public:
 			typedef struct see_blargg_common_h int32_t;
 			typedef struct see_blargg_common_h uint32_t;
 		#endif
+
+		#if ULLONG_MAX == 0xFFFFFFFFFFFFFFFF
+			typedef long long            int64_t;
+			typedef unsigned long long   uint64_t;
+		#else
+			// No suitable 32-bit type available
+			typedef struct see_blargg_common_h int64_t;
+			typedef struct see_blargg_common_h uint64_t;
+		#endif
 	};
 #endif
 
