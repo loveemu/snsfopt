@@ -15,6 +15,16 @@ if(HAVE_STDINT_H)
     add_definitions(-DHAVE_STDINT_H)
 endif()
 
+check_include_files(inttypes.h HAVE_INTTYPES_H)
+if(HAVE_INTTYPES_H)
+    add_definitions(-DHAVE_INTTYPES_H)
+endif()
+
+check_include_files(stdbool.h HAVE_STDBOOL_H)
+if(HAVE_STDBOOL_H)
+    add_definitions(-DHAVE_STDBOOL_H)
+endif()
+
 if(MSVC)
     if(CMAKE_CL_64)
         set(MSVC_ARCHITECTURE_NAME x64)
