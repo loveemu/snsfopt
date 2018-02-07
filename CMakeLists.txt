@@ -72,6 +72,14 @@ set(SRCS
     src/ZlibWriter.cpp
 )
 
+set(HDRS
+    src/cpath.h
+    src/ctimer.h
+    src/PSFFile.h
+    src/snsfopt.h
+    src/SPCFile.h
+)
+
 set(SNSF9X_SRCS
     src/snsf9x/SNESSystem.cpp
     src/snsf9x/snes9x/cpu.cpp
@@ -91,7 +99,39 @@ set(SNSF9X_SRCS
     src/snsf9x/snes9x/apu/SPC_Filter.cpp
 )
 
-add_executable(snsfopt ${SRCS} ${SNSF9X_SRCS})
+set(SNSF9X_HDRS
+    src/snsf9x/SNESSystem.h
+    src/snsf9x/snes9x/65c816.h
+    src/snsf9x/snes9x/cpuaddr.h
+    src/snsf9x/snes9x/cpuexec.h
+    src/snsf9x/snes9x/cpumacro.h
+    src/snsf9x/snes9x/cpuops.h
+    src/snsf9x/snes9x/dma.h
+    src/snsf9x/snes9x/getset.h
+    src/snsf9x/snes9x/memmap.h
+    src/snsf9x/snes9x/messages.h
+    src/snsf9x/snes9x/pixform.h
+    src/snsf9x/snes9x/port.h
+    src/snsf9x/snes9x/ppu.h
+    src/snsf9x/snes9x/sa1.h
+    src/snsf9x/snes9x/sdd1.h
+    src/snsf9x/snes9x/snes9x.h
+    src/snsf9x/snes9x/apu/apu.h
+    src/snsf9x/snes9x/apu/blargg_common.h
+    src/snsf9x/snes9x/apu/blargg_config.h
+    src/snsf9x/snes9x/apu/blargg_endian.h
+    src/snsf9x/snes9x/apu/blargg_source.h
+    src/snsf9x/snes9x/apu/hermite_resampler.h
+    src/snsf9x/snes9x/apu/linear_resampler.h
+    src/snsf9x/snes9x/apu/resampler.h
+    src/snsf9x/snes9x/apu/ring_buffer.h
+    src/snsf9x/snes9x/apu/SNES_SPC.h
+    src/snsf9x/snes9x/apu/SPC_CPU.h
+    src/snsf9x/snes9x/apu/SPC_DSP.h
+    src/snsf9x/snes9x/apu/SPC_Filter.h
+)
+
+add_executable(snsfopt ${SRCS} ${HDRS} ${SNSF9X_SRCS} ${SNSF9X_HDRS})
 
 if(ZLIB_FOUND)
     include_directories(${ZLIB_INCLUDE_DIRS})
