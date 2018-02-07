@@ -4,8 +4,6 @@ project(snsfopt C CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(VERSION "1.2.3")
-
 include(CheckIncludeFiles)
 
 include_directories(src/snsf9x/snes9x)
