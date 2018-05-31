@@ -1035,13 +1035,13 @@ uint32_t SnsfOpt::MergeRefs(uint8_t * dst_refs, const uint8_t * src_refs, uint32
 	uint32_t bytes_used = 0;
 	for (uint32_t i = 0; i < size; i++)
 	{
-		if (dst_refs[i] + src_refs[i] <= 0xff)
+		if ((unsigned int)dst_refs[i] + src_refs[i] <= 0xff)
 		{
 			dst_refs[i] += src_refs[i];
 		}
 		else
 		{
-			dst_refs[i] += 0xff;
+			dst_refs[i] = 0xff;
 		}
 
 		if (dst_refs[i] != 0)
