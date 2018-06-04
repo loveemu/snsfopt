@@ -33,7 +33,7 @@
 #endif
 
 #define APP_NAME    "snsfopt"
-#define APP_VER     "[2018-05-31]"
+#define APP_VER     "[2018-06-04]"
 #define APP_URL     "http://github.com/loveemu/snsfopt"
 
 #define SNSF_PSF_VERSION		0x23
@@ -57,7 +57,8 @@ SnsfOpt::SnsfOpt() :
 	target_loop_count(2),
 	loop_verify_length(20.0),
 	oneshot_verify_length(15),
-	paranoid_bytes(0),
+	paranoid_closed_area_fill_size(0),
+	paranoid_post_fill_size(0),
 	snsf_base_offset(0),
 	spc_snapshot_dumped(NULL),
 	DelayedSPCDump(false),
@@ -1072,28 +1073,33 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 		memcpy(rom_refs, this->rom_refs, size);
 		MergeRefs(rom_refs, m_system->GetROMCoverage(), size);
 
-		uint32_t paranoid_count = 0;
+		uint32_t paranoid_unused_area_size = 0;
+		uint32_t paranoid_post_fill_count = 0;
 
-		for (uint32_t file_offset = 0; file_offset < size; file_offset++)
-		{
+		for (uint32_t file_offset = 0; file_offset < size; file_offset++) {
 			uint32_t mem_offset = m_system->GetMemoryOffset(file_offset);
+			bool is_offset_used = rom_refs[mem_offset] != 0;
 
-			if (rom_refs[mem_offset] != 0 || paranoid_count > 0)
-			{
-				if (rom_refs[mem_offset] != 0)
-				{
-					paranoid_count = paranoid_bytes;
-				}
-				else if (paranoid_count > 0)
-				{
-					paranoid_count--;
-				}
-
+			if (is_offset_used || paranoid_post_fill_count > 0) {
 				m_system->ReadROM(&((uint8_t *)rom)[file_offset], 1, file_offset);
-			}
-			else
-			{
+
+				if (paranoid_post_fill_count > 0) {
+					paranoid_post_fill_count--;
+				}
+			} else {
 				((uint8_t *)rom)[file_offset] = 0;
+			}
+
+			if (is_offset_used) {
+				paranoid_post_fill_count = paranoid_post_fill_size;
+
+				if (paranoid_unused_area_size <= paranoid_closed_area_fill_size) {
+					m_system->ReadROM(&((uint8_t *)rom)[file_offset - paranoid_unused_area_size],
+						paranoid_unused_area_size, file_offset - paranoid_unused_area_size);
+				}
+				paranoid_unused_area_size = 0;
+			} else {
+				paranoid_unused_area_size++;
 			}
 		}
 
@@ -1222,8 +1228,12 @@ static void usage(const char * progname, bool extended)
 		printf("    Time is specified in mm:ss.nnn format   \n");
 		printf("    mm = minutes, ss = seoconds, nnn = milliseconds\n");
 		printf("\n");
-		printf("`-P [bytes]`\n");
+		printf("`-p [bytes]`\n");
 		printf("  : I am paranoid, and wish to assume that any data \n");
+		printf("    within [bytes] bytes between two used bytes, is also used\n");
+		printf("\n");
+		printf("`-P [bytes]`\n");
+		printf("  : I am paranoid, and wish to assume that any trailing data \n");
 		printf("    within [bytes] bytes of a used byte, is also used\n");
 		printf("\n");
 		printf("`-cs`\n");
@@ -1401,7 +1411,7 @@ int main(int argc, char *argv[])
 			opt.SetTimeout(SnsfOpt::ToTimeValue(argv[argi + 1]));
 			argi++;
 		}
-		else if (strcmp(argv[argi], "-P") == 0) // I am paranoid. assume x bytes within a used byte is also used.
+		else if (strcmp(argv[argi], "-p") == 0) // I am paranoid. assume within x bytes between two used bytes is also used.
 		{
 			if (argc <= (argi + 1))
 			{
@@ -1415,7 +1425,24 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "Error: Number format error \"%s\"\n", argv[argi + 1]);
 				return 1;
 			}
-			opt.SetParanoidSize(l);
+			opt.SetParanoidClosedAreaFillSize(l);
+			argi++;
+		}
+		else if (strcmp(argv[argi], "-P") == 0) // I am paranoid. assume within x trailing bytes of a used byte is also used.
+		{
+			if (argc <= (argi + 1))
+			{
+				fprintf(stderr, "Error: Too few arguments for \"%s\"\n", argv[argi]);
+				return 1;
+			}
+
+			l = strtol(argv[argi + 1], &endptr, 0);
+			if (*endptr != '\0' || errno == ERANGE || l < 0)
+			{
+				fprintf(stderr, "Error: Number format error \"%s\"\n", argv[argi + 1]);
+				return 1;
+			}
+			opt.SetParanoidPostFillSize(l);
 			argi++;
 		}
 		else if (strcmp(argv[argi], "-o") == 0)
@@ -1644,6 +1671,11 @@ int main(int argc, char *argv[])
 				}
 			}
 
+			if (opt.GetParanoidPostFillSize() > 0 || opt.GetParanoidClosedAreaFillSize() > 0) {
+				printf("I am paranoid. (closed area = %d bytes, post = %d bytes)\n",
+					opt.GetParanoidClosedAreaFillSize(), opt.GetParanoidPostFillSize());
+			}
+
 			// optimize
 			opt.ResetOptimizer();
 			if (!opt.LoadROMFile(argv[argi]))
@@ -1705,6 +1737,11 @@ int main(int argc, char *argv[])
 				}
 			}
 
+			if (opt.GetParanoidPostFillSize() > 0 || opt.GetParanoidClosedAreaFillSize() > 0) {
+				printf("I am paranoid. (closed area = %d bytes, post = %d bytes)\n",
+					opt.GetParanoidClosedAreaFillSize(), opt.GetParanoidPostFillSize());
+			}
+
 			// optimize
 			opt.ResetOptimizer();
 			for (; argi < argc; argi++)
@@ -1734,6 +1771,11 @@ int main(int argc, char *argv[])
 			{
 				fprintf(stderr, "Error: Output filename cannot be specified to multiple ROMs.\n");
 				return 1;
+			}
+
+			if (opt.GetParanoidPostFillSize() > 0 || opt.GetParanoidClosedAreaFillSize() > 0) {
+				printf("I am paranoid. (closed area = %d bytes, post = %d bytes)\n",
+					opt.GetParanoidClosedAreaFillSize(), opt.GetParanoidPostFillSize());
 			}
 
 			// optimize

@@ -23,8 +23,12 @@ Syntax: `snsfopt [options] [-s or -l or -f or -r or -x or -t] [snsf files]`
     Time is specified in mm:ss.nnn format   
     mm = minutes, ss = seoconds, nnn = milliseconds
 
+`-p [bytes]`
+  : I am paranoid, and wish to assume that any data within [bytes] bytes between two used bytes,
+    is also used
+
 `-P [bytes]`
-  : I am paranoid, and wish to assume that any data within [bytes] bytes of a used byte,
+  : I am paranoid, and wish to assume that any trailing data within [bytes] bytes of a used byte,
     is also used
 
 `-cs`

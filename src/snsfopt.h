@@ -128,14 +128,24 @@ public:
 		oneshot_verify_length = length;
 	}
 
-	inline uint32_t GetParanoidSize(void) const
+	inline uint32_t GetParanoidClosedAreaFillSize(void) const
 	{
-		return paranoid_bytes;
+		return paranoid_closed_area_fill_size;
 	}
 
-	inline void SetParanoidSize(uint32_t size)
+	inline void SetParanoidClosedAreaFillSize(uint32_t size)
 	{
-		paranoid_bytes = size;
+		paranoid_closed_area_fill_size = size;
+	}
+
+	inline uint32_t GetParanoidPostFillSize(void) const
+	{
+		return paranoid_post_fill_size;
+	}
+
+	inline void SetParanoidPostFillSize(uint32_t size)
+	{
+		paranoid_post_fill_size = size;
 	}
 
 	inline void SetSNSFBaseOffset(uint32_t base_offset)
@@ -277,7 +287,8 @@ protected:
 	std::map<std::string, std::string> spc_tags;
 	SPCFile * spc_snapshot_dumped;
 
-	uint32_t paranoid_bytes;
+	uint32_t paranoid_closed_area_fill_size;
+	uint32_t paranoid_post_fill_size;
 
 	bool ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size, uint8_t * sram_buf, uint32_t * ptr_sram_size, uint32_t * ptr_base_offset);
 
