@@ -57,7 +57,7 @@ SnsfOpt::SnsfOpt() :
 	target_loop_count(2),
 	loop_verify_length(20.0),
 	oneshot_verify_length(15),
-	paranoid_closed_area_fill_size(0),
+	paranoid_closed_area_fill_size(1),
 	paranoid_post_fill_size(0),
 	snsf_base_offset(0),
 	spc_snapshot_dumped(NULL),
@@ -1228,11 +1228,11 @@ static void usage(const char * progname, bool extended)
 		printf("    Time is specified in mm:ss.nnn format   \n");
 		printf("    mm = minutes, ss = seoconds, nnn = milliseconds\n");
 		printf("\n");
-		printf("`-p [bytes]`\n");
+		printf("`-p [bytes]` (default=1)\n");
 		printf("  : I am paranoid, and wish to assume that any data \n");
 		printf("    within [bytes] bytes between two used bytes, is also used\n");
 		printf("\n");
-		printf("`-P [bytes]`\n");
+		printf("`-P [bytes]` (default=0)\n");
 		printf("  : I am paranoid, and wish to assume that any trailing data \n");
 		printf("    within [bytes] bytes of a used byte, is also used\n");
 		printf("\n");
