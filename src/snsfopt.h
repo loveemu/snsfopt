@@ -31,9 +31,9 @@ public:
 	void SetSPCTags(const std::map<std::string, std::string> & tags);
 	void ClearSPCTags(void);
 
-	bool GetROM(void * rom, uint32_t size, bool wipe_unused_data) const;
-	bool SaveROM(const std::string& filename, bool wipe_unused_data) const;
-	bool SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data, std::map<std::string, std::string>& tags) const;
+	bool GetROM(void * rom, uint32_t size, bool wipe_unused_data);
+	bool SaveROM(const std::string& filename, bool wipe_unused_data);
+	bool SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data, std::map<std::string, std::string>& tags);
 
 	bool DelayedSPCDump;
 	bool FixROMChecksum;
@@ -146,6 +146,16 @@ public:
 	inline void SetParanoidPostFillSize(uint32_t size)
 	{
 		paranoid_post_fill_size = size;
+	}
+
+	inline uint32_t GetParanoidFilledSize(void) const
+	{
+		return paranoid_filled_size;
+	}
+
+	inline uint32_t GetCoveredSize() const
+	{
+		return covered_size;
 	}
 
 	inline void SetSNSFBaseOffset(uint32_t base_offset)
@@ -289,6 +299,8 @@ protected:
 
 	uint32_t paranoid_closed_area_fill_size;
 	uint32_t paranoid_post_fill_size;
+	uint32_t paranoid_filled_size;
+	uint32_t covered_size;
 
 	bool ReadSNSFFile(const std::string& filename, unsigned int nesting_level, uint8_t * rom_buf, uint32_t * ptr_rom_size, uint8_t * sram_buf, uint32_t * ptr_sram_size, uint32_t * ptr_base_offset);
 

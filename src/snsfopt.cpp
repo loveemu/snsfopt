@@ -1053,7 +1053,7 @@ uint32_t SnsfOpt::MergeRefs(uint8_t * dst_refs, const uint8_t * src_refs, uint32
 	return bytes_used;
 }
 
-bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
+bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data)
 {
 	uint32_t rom_size = GetROMSize();
 
@@ -1076,12 +1076,23 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 		uint32_t paranoid_unused_area_size = 0;
 		uint32_t paranoid_post_fill_count = 0;
 
+		uint32_t covered_size = 0;
+		uint32_t paranoid_filled = 0;
+		this->covered_size = 0;
+		this->paranoid_filled_size = 0;
+
 		for (uint32_t file_offset = 0; file_offset < size; file_offset++) {
 			uint32_t mem_offset = m_system->GetMemoryOffset(file_offset);
 			bool is_offset_used = rom_refs[mem_offset] != 0;
 
 			if (is_offset_used || paranoid_post_fill_count > 0) {
 				m_system->ReadROM(&((uint8_t *)rom)[file_offset], 1, file_offset);
+
+				if (is_offset_used) {
+					covered_size++;
+				} else {
+					paranoid_filled++;
+				}
 
 				if (paranoid_post_fill_count > 0) {
 					paranoid_post_fill_count--;
@@ -1094,14 +1105,28 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 				paranoid_post_fill_count = paranoid_post_fill_size;
 
 				if (paranoid_unused_area_size <= paranoid_closed_area_fill_size) {
-					m_system->ReadROM(&((uint8_t *)rom)[file_offset - paranoid_unused_area_size],
-						paranoid_unused_area_size, file_offset - paranoid_unused_area_size);
+					uint32_t fill_offset = file_offset - paranoid_unused_area_size;
+
+						m_system->ReadROM(&((uint8_t *)rom)[fill_offset],
+						paranoid_unused_area_size, fill_offset);
+
+					while (paranoid_unused_area_size > 0) {
+						paranoid_unused_area_size--;
+
+						uint32_t fill_mem_offset = m_system->GetMemoryOffset(fill_offset);
+						if (rom_refs[fill_mem_offset] == 0) {
+							paranoid_filled++;
+						}
+					}
 				}
 				paranoid_unused_area_size = 0;
 			} else {
 				paranoid_unused_area_size++;
 			}
 		}
+
+		this->covered_size = covered_size;
+		this->paranoid_filled_size = paranoid_filled;
 
 		delete [] rom_refs;
 	}
@@ -1118,7 +1143,7 @@ bool SnsfOpt::GetROM(void * rom, uint32_t size, bool wipe_unused_data) const
 	return true;
 }
 
-bool SnsfOpt::SaveROM(const std::string& filename, bool wipe_unused_data) const
+bool SnsfOpt::SaveROM(const std::string& filename, bool wipe_unused_data)
 {
 	uint32_t size = GetROMSize();
 	uint8_t * rom = new uint8_t[size];
@@ -1150,7 +1175,7 @@ bool SnsfOpt::SaveROM(const std::string& filename, bool wipe_unused_data) const
 	return result;
 }
 
-bool SnsfOpt::SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data, std::map<std::string, std::string>& tags) const
+bool SnsfOpt::SaveSNSF(const std::string& filename, uint32_t base_offset, bool wipe_unused_data, std::map<std::string, std::string>& tags)
 {
 	uint32_t size = GetROMSize();
 	bool result = false;
@@ -1671,11 +1696,6 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			if (opt.GetParanoidPostFillSize() > 0 || opt.GetParanoidClosedAreaFillSize() > 0) {
-				printf("I am paranoid. (closed area = %d bytes, post = %d bytes)\n",
-					opt.GetParanoidClosedAreaFillSize(), opt.GetParanoidPostFillSize());
-			}
-
 			// optimize
 			opt.ResetOptimizer();
 			if (!opt.LoadROMFile(argv[argi]))
@@ -1705,6 +1725,19 @@ int main(int argc, char *argv[])
 			}
 
 			opt.SaveSNSF(out_path, 0, true, tags);
+
+			if (opt.GetParanoidClosedAreaFillSize() > 0) {
+				printf("Preserved any data within %d bytes between two used bytes.\n",
+					opt.GetParanoidClosedAreaFillSize());
+			}
+
+			if (opt.GetParanoidPostFillSize() > 0) {
+				printf("Preserved any data within %d trailing bytes of a used byte.\n",
+					opt.GetParanoidPostFillSize());
+			}
+
+			printf("Covered %u bytes. Preserved %d extra bytes.\n", opt.GetCoveredSize(), opt.GetParanoidFilledSize());
+
 			break;
 		}
 
@@ -1737,11 +1770,6 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			if (opt.GetParanoidPostFillSize() > 0 || opt.GetParanoidClosedAreaFillSize() > 0) {
-				printf("I am paranoid. (closed area = %d bytes, post = %d bytes)\n",
-					opt.GetParanoidClosedAreaFillSize(), opt.GetParanoidPostFillSize());
-			}
-
 			// optimize
 			opt.ResetOptimizer();
 			for (; argi < argc; argi++)
@@ -1762,6 +1790,19 @@ int main(int argc, char *argv[])
 			}
 
 			opt.SaveSNSF(out_path, 0, true, tags);
+
+			if (opt.GetParanoidClosedAreaFillSize() > 0) {
+				printf("Preserved any data within %d bytes between two used bytes.\n",
+					opt.GetParanoidClosedAreaFillSize());
+			}
+
+			if (opt.GetParanoidPostFillSize() > 0) {
+				printf("Preserved any data within %d trailing bytes of a used byte.\n",
+					opt.GetParanoidPostFillSize());
+			}
+
+			printf("Covered %u bytes. Preserved %d extra bytes.\n", opt.GetCoveredSize(), opt.GetParanoidFilledSize());
+
 			break;
 		}
 
@@ -1771,11 +1812,6 @@ int main(int argc, char *argv[])
 			{
 				fprintf(stderr, "Error: Output filename cannot be specified to multiple ROMs.\n");
 				return 1;
-			}
-
-			if (opt.GetParanoidPostFillSize() > 0 || opt.GetParanoidClosedAreaFillSize() > 0) {
-				printf("I am paranoid. (closed area = %d bytes, post = %d bytes)\n",
-					opt.GetParanoidClosedAreaFillSize(), opt.GetParanoidPostFillSize());
 			}
 
 			// optimize
@@ -1824,6 +1860,18 @@ int main(int argc, char *argv[])
 				}
 
 				opt.SaveSNSF(out_path, 0, true, tags);
+
+				if (opt.GetParanoidClosedAreaFillSize() > 0) {
+					printf("Preserved any data within %d bytes between two used bytes.\n",
+						opt.GetParanoidClosedAreaFillSize());
+				}
+
+				if (opt.GetParanoidPostFillSize() > 0) {
+					printf("Preserved any data within %d trailing bytes of a used byte.\n",
+						opt.GetParanoidPostFillSize());
+				}
+
+				printf("Covered %u bytes. Preserved %d extra bytes.\n", opt.GetCoveredSize(), opt.GetParanoidFilledSize());
 			}
 			break;
 		}
