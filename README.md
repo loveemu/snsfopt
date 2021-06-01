@@ -1,6 +1,6 @@
 snsfopt
 =======
-[![Travis Build Status](https://travis-ci.org/loveemu/snsfopt.svg?branch=master)](https://travis-ci.org/loveemu/snsfopt) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/5769a7kgcdknrmn9/branch/master?svg=true)](https://ci.appveyor.com/project/loveemu/snsfopt/branch/master)
+[![Travis Build Status](https://travis-ci.com/loveemu/snsfopt.svg?branch=master)](https://travis-ci.com/loveemu/snsfopt) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/5769a7kgcdknrmn9/branch/master?svg=true)](https://ci.appveyor.com/project/loveemu/snsfopt/branch/master)
 
 SNSF set optimizer / timer, derived from snsf9x and gsfopt.
 
