@@ -86,4 +86,4 @@ Syntax: `snsfopt [options] [-s or -l or -f or -r or -x or -t] [snsf files]`
 ##### Options for -x
 
 `-d`
-  : Delayed SPC capture, delay-time can be specified by `-T`
+  : Delayed SPC capture, delay-time can be specified by `-T [time] -x -d`

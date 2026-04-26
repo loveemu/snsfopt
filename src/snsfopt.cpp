@@ -1237,7 +1237,7 @@ static void usage(const char * progname, bool extended)
 	printf("Usage\n");
 	printf("-----\n");
 	printf("\n");
-	printf("Syntax: `%s [options] [-s or -l or -f or -t] [snsf files]`\n", progname);
+	printf("Syntax: `%s [options] [-s or -l or -f or -r or -x or -t] [snsf files]`\n", progname);
 	printf("\n");
 
 	if (!extended)
@@ -1317,7 +1317,7 @@ static void usage(const char * progname, bool extended)
 		printf("#### Options for -x\n");
 		printf("\n");
 		printf("`-d`\n");
-		printf("  : Delayed SPC capture, delay-time can be specified by `-T`\n");
+		printf("  : Delayed SPC capture, delay-time can be specified by `-T [time] -x -d`\n");
 		printf("\n");
 	}
 }
@@ -1639,7 +1639,7 @@ int main(int argc, char *argv[])
 
 	if (mode == SNSFOPT_PROC_NONE)
 	{
-		fprintf(stderr, "Error: You need to specify a processing mode, -f, -s, -l, -r, -t\n");
+		fprintf(stderr, "Error: You need to specify a processing mode, -f, -s, -l, -r, -x, -t\n");
 		return 1;
 	}
 
