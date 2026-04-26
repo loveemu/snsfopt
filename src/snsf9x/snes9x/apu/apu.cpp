@@ -541,6 +541,8 @@ bool8 S9xInitAPU (void)
 	spc::shrink_buffer  = NULL;
 	spc::resampler      = NULL;
 
+	S9xTakingSPCSnapshot = FALSE;
+
 	return (TRUE);
 }
 
