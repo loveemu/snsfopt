@@ -312,8 +312,6 @@ typedef unsigned long long	uint64;
 #ifndef ZeroMemory
 #define ZeroMemory(a, b)	memset((a), 0, (b))
 #endif
-void _splitpath (const char *, char *, char *, char *, char *);
-void _makepath (char *, const char *, const char *, const char *, const char *);
 #define S9xDisplayString	DisplayStringFromBottom
 #else
 #define snprintf _snprintf
