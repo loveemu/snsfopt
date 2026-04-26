@@ -4,28 +4,30 @@ image: Visual Studio 2022
 
 environment:
   matrix:
-  - generator: "Visual Studio 2022"
+  - generator: "Visual Studio 17 2022"
     config: Release
-    arch: vs2022-x86
+    arch: Win32
+    artifact_suffix: win-x86
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
 
-  - generator: "Visual Studio 2022 Win64"
+  - generator: "Visual Studio 17 2022"
     config: Release
-    arch: vs2022-x64
+    arch: x64
+    artifact_suffix: win-x64
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
 
 init:
   - git config --global core.autocrlf input
 
 build_script:
-  - cmake -G"%generator%" -H. -Bbuild
+  - cmake -G "%generator%" -A "%arch%" -H. -Bbuild
   #- cmake --build build --config "%config%"
   - msbuild build\snsfopt.sln /t:build /p:Configuration="%config%" /m /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
   - ps: $env:gitrev = git describe --tags
   - ps: $env:my_version = "$env:gitrev"
-  - set package_name=snsfopt-%my_version%-%arch%
+  - set package_name=snsfopt-%my_version%-%artifact_suffix%
   - copy "build\%config%\snsfopt.exe" .
   - 7z a %package_name%.zip snsfopt.exe README.md LICENSE
 
