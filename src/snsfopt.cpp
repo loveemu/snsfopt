@@ -694,6 +694,12 @@ void SnsfOpt::ClearSPCTags(void)
 
 void SnsfOpt::Optimize_Start(void)
 {
+	if (spc_snapshot_dumped != NULL)
+	{
+		delete spc_snapshot_dumped;
+		spc_snapshot_dumped = NULL;
+	}
+
 	rom_bytes_used_old = m_system->GetROMCoverageSize();
 	apuram_bytes_used_old = m_system->GetAPURAMCoverageSize();
 	time_last_new_data = m_output.get_timer();
