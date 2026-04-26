@@ -190,7 +190,7 @@
 #include <sys/types.h>
 
 #ifdef __WIN32__
-#define NOMINMAX
+#define NOMINMAX 1
 #include <windows.h>
 #endif
 
@@ -207,6 +207,14 @@
 #ifdef __MACOSX__
 #undef GFX_MULTI_FORMAT
 #define PIXEL_FORMAT RGB555
+#endif
+
+#if defined(__GNUC__)
+#define alwaysinline  inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#define alwaysinline  __forceinline
+#else
+#define alwaysinline  inline
 #endif
 
 #ifndef snes9x_types_defined
@@ -258,13 +266,8 @@ typedef unsigned int		uint32;
 // long long is not part of ISO C++ 
 __extension__
 #endif
-#if _MSC_VER == 1200
-typedef signed __int64 int64;
-typedef unsigned __int64 uint64;
-#else
-typedef long long int64;
-typedef unsigned long long uint64;
-#endif
+typedef long long			int64;
+typedef unsigned long long	uint64;
 #endif	//  __WIN32__
 #endif	// HAVE_STDINT_H
 #endif	// snes9x_types_defined
@@ -320,7 +323,7 @@ void WinDisplayStringFromBottom(const char *string, int linesFromBottom, int pix
 #define S9xDisplayString	WinDisplayStringFromBottom
 #endif
 
-#ifdef __DJGPP
+#if defined(__DJGPP) || defined(__WIN32__)
 #define SLASH_STR	"\\"
 #define SLASH_CHAR	'\\'
 #else
@@ -341,10 +344,8 @@ void WinDisplayStringFromBottom(const char *string, int linesFromBottom, int pix
 #define TITLE "Snes9x"
 #endif
 
-#if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(__x86_64__) || defined(__alpha__) || defined(__MIPSEL__) || defined(_M_IX86)
-#ifndef LSB_FIRST
+#if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(__x86_64__) || defined(__alpha__) || defined(__MIPSEL__) || defined(_M_IX86) || defined(_M_X64) || defined(_XBOX1) || defined(__arm__) || defined(ANDROID) || defined(__aarch64__) || (defined(__BYTE_ORDER__) && __BYTE_ORDER == __ORDER_LITTLE_ENDIAN__)
 #define LSB_FIRST
-#endif
 #define FAST_LSB_WORD_ACCESS
 #else
 #define MSB_FIRST
