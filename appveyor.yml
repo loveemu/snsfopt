@@ -1,18 +1,18 @@
 version: 1.2.{build}
 
-image: Visual Studio 2017
+image: Visual Studio 17 2022
 
 environment:
   matrix:
   - generator: "Visual Studio 2022"
     config: Release
     arch: vs2022-x86
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 17 2022
 
   - generator: "Visual Studio 2022 Win64"
     config: Release
     arch: vs2022-x64
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 17 2022
 
 init:
   - git config --global core.autocrlf input
