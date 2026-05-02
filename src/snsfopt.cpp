@@ -302,7 +302,7 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 		fp = fopen(filename.c_str(), "rb");
 		if (fp == NULL)
 		{
-			m_message = filename + " - " + "File size error";
+			m_message = filename + " - " + "File open error";
 			return false;
 		}
 
