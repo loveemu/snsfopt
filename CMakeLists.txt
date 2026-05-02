@@ -39,10 +39,6 @@ endif()
 find_package(ZLIB REQUIRED)
 
 if(MSVC)
-    # Allow for wildcards in command-line path arguments
-    # https://learn.microsoft.com/en-us/cpp/c-language/expanding-wildcard-arguments
-    target_link_options(snsfopt PRIVATE setargv.obj)
-
     # Disable MSVC specific secure error
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
@@ -119,6 +115,12 @@ set(SNSF9X_HDRS
 )
 
 add_executable(snsfopt ${SRCS} ${HDRS} ${SNSF9X_SRCS} ${SNSF9X_HDRS})
+
+if(MSVC)
+    # Allow for wildcards in command-line path arguments
+    # https://learn.microsoft.com/en-us/cpp/c-language/expanding-wildcard-arguments
+    target_link_options(snsfopt PRIVATE setargv.obj)
+endif()
 
 if(ZLIB_FOUND)
     include_directories(${ZLIB_INCLUDE_DIRS})
