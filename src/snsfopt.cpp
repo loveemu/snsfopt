@@ -300,7 +300,7 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 		}
 		else if (filesize > SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE)
 		{
-			m_message = filename + " - " + "File size error";
+			m_message = filename + " - " + "File size too large";
 			return false;
 		}
 
