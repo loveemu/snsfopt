@@ -293,7 +293,12 @@ bool SnsfOpt::LoadROMFile(const std::string& filename)
 		off_t filesize;
 
 		filesize = path_getfilesize(filename.c_str());
-		if (filesize <= 0 || filesize > SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE)
+		if (filesize <= 0)
+		{
+			m_message = filename + " - " + "File not found";
+			return false;
+		}
+		else if (filesize > SNES_HEADER_SIZE + MAX_SNES_ROM_SIZE)
 		{
 			m_message = filename + " - " + "File size error";
 			return false;
