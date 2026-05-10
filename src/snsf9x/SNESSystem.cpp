@@ -3,6 +3,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #include <zlib.h>
 
 #include "snes9x/snes9x.h"
