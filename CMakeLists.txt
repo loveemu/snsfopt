@@ -33,7 +33,6 @@ if(MSVC)
     # Use bundled dependencies
     set(ZLIB_ROOT ${CMAKE_SOURCE_DIR}/dependencies/zlib)
     set(ZLIB_LIBRARY ${CMAKE_SOURCE_DIR}/dependencies/zlib/lib/${MSVC_ARCHITECTURE_NAME}/zlibstat.lib)
-    add_definitions(-DZLIB_WINAPI)
 endif()
 
 find_package(ZLIB REQUIRED)
